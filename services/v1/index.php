@@ -4816,8 +4816,8 @@ $app->post('/get_all_section_count', 'authenticateUser', function () use ($app) 
 
 
 // quick view
-$app->post('/quick_view','authenticateUser', function () use ($app) {
-    
+$app->post('/quick_view', 'authenticateUser', function () use ($app) {
+
     verifyRequiredParams(array('data'));
     $data_request = json_decode($app->request->post('data'));
     $inq_id = $data_request->inq_id;
@@ -4826,45 +4826,37 @@ $app->post('/quick_view','authenticateUser', function () use ($app) {
     $data = array();
     $data["data"] = array();
     $temp = array();
-    $result=$db->quick_view($inq_id);
+    $result = $db->quick_view($inq_id);
 
-    if(mysqli_num_rows($result)>0){
+    if (mysqli_num_rows($result) > 0) {
         while ($row = $result->fetch_assoc()) {
             $temp = array();
             foreach ($row as $key => $value) {
                 $temp[$key] = $value;
             }
-            if($row["source"]=="no data")
-            {
-                $result_source=$db->quick_view_additional_data($inq_id);
+            if ($row["source"] == "no data") {
+                $result_source = $db->quick_view_additional_data($inq_id);
                 foreach ($result_source as $key => $value) {
                     $temp[$key] = $value;
                 }
             }
             $temp = array_map('utf8_encode', $temp);
-           
         }
-        
+
         array_push($data['data'], $temp);
     }
-    
-   
-    
-    
-    
-
-    
 
 
-    $data["data"]=$temp;
+
+    $data["data"] = $temp;
 
     $data['success'] = true;
- 
+
     echoResponse(200, $data);
 });
 
 
-// add additional plot
+// add additional road
 $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
 
     verifyRequiredParams(array('data'));
@@ -4879,18 +4871,16 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
 
 
     $industrial_estate_id = $data_request->industrial_estate_id;
-    $state = $data_request->state;
-    $city = $data_request->city;
-    $taluka = $data_request->taluka;
-    $area = $data_request->area;
+
     $industrial_estate = $data_request->industrial_estate;
     $road_cnt = $data_request->road_count;
     $estate_roadplot = $data_request->estate_roadplot;
     $floor = "0";
     $plot_id = "1";
-    $flag=0;
+    $flag = 0;
 
 
+    $ind_estate_data = $db->get_ind_estate_data($industrial_estate_id);
 
     for ($i = 0; $i < $road_cnt; $i++) {
 
@@ -4901,23 +4891,25 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
 
         $from_to_plots_cnt = count($from_to_plots);
 
-        for ($ft = 0; $ft < $from_to_plots_cnt; $ft++) {
-            $from_plotno_road = strtoupper($from_to_plots[$ft]->from_plot_no);
-            $to_plotno_road = strtoupper($from_to_plots[$ft]->to_plot_no);
 
-            $letters = "/^[A-Za-z]$/";
-            $suffix = "/^[0-9]+[^a-zA-Z0-9]*[a-zA-Z]$/";
-            $prefix = "/^[a-zA-Z][^a-zA-Z0-9]*[0-9]+$/";
-            $specialChars = "/[`!@#$%^&*()_\-+=\[\]{};':\\|,.<>\/?~ ]+/";
-            $re_for_alphabet = "/([a-zA-Z]+)/";
-            $re_for_digits = "/(\d+)/";
+        $check_road = $db->check_road($road_number, $industrial_estate_id);
+        if ($check_road == 0) {
 
-            if ($from_plotno_road != "" || $from_plotno_road != null) {
+            for ($ft = 0; $ft < $from_to_plots_cnt; $ft++) {
+                $from_plotno_road = strtoupper($from_to_plots[$ft]->from_plot_no);
+                $to_plotno_road = strtoupper($from_to_plots[$ft]->to_plot_no);
 
-                //check if road  already exists
+                $letters = "/^[A-Za-z]$/";
+                $suffix = "/^[0-9]+[^a-zA-Z0-9]*[a-zA-Z]$/";
+                $prefix = "/^[a-zA-Z][^a-zA-Z0-9]*[0-9]+$/";
+                $specialChars = "/[`!@#$%^&*()_\-+=\[\]{};':\\|,.<>\/?~ ]+/";
+                $re_for_alphabet = "/([a-zA-Z]+)/";
+                $re_for_digits = "/(\d+)/";
 
-                $check_road = $db->check_road($road_number, $industrial_estate_id);
-                if ($check_road == 0) {
+                if ($from_plotno_road != "" && $from_plotno_road != null) {
+
+                    //check if road  already exists
+
 
                     $resp_plot = $db->pr_estate_roadplot($industrial_estate_id, $road_number, $from_plotno_road, $to_plotno_road, $userid);
 
@@ -4948,10 +4940,10 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
                                     "Segment" => "",
                                     "Premise" => "",
                                     "Factory_Address" => "",
-                                    "state" => $state,
-                                    "city" => $city,
-                                    "Taluka" => $taluka,
-                                    "Area" => $area,
+                                    "state" => $ind_estate_data["state_id"],
+                                    "city" => $ind_estate_data["city_id"],
+                                    "Taluka" => $ind_estate_data["taluka"],
+                                    "Area" => $ind_estate_data["area_id"],
                                     "IndustrialEstate" => $industrial_estate,
                                     "loan_applied" => "",
                                     "Completion_Date" => "",
@@ -5016,10 +5008,10 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
                                     "Segment" => "",
                                     "Premise" => "",
                                     "Factory_Address" => "",
-                                    "state" => $state,
-                                    "city" => $city,
-                                    "Taluka" => $taluka,
-                                    "Area" => $area,
+                                    "state" => $ind_estate_data["state_id"],
+                                    "city" => $ind_estate_data["city_id"],
+                                    "Taluka" => $ind_estate_data["taluka"],
+                                    "Area" => $ind_estate_data["area_id"],
                                     "IndustrialEstate" => $industrial_estate,
                                     "loan_applied" => "",
                                     "Completion_Date" => "",
@@ -5095,10 +5087,10 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
                                         "Segment" => "",
                                         "Premise" => "",
                                         "Factory_Address" => "",
-                                        "state" => $state,
-                                        "city" => $city,
-                                        "Taluka" => $taluka,
-                                        "Area" => $area,
+                                        "state" => $ind_estate_data["state_id"],
+                                        "city" => $ind_estate_data["city_id"],
+                                        "Taluka" => $ind_estate_data["taluka"],
+                                        "Area" => $ind_estate_data["area_id"],
                                         "IndustrialEstate" => $industrial_estate,
                                         "loan_applied" => "",
                                         "Completion_Date" => "",
@@ -5160,10 +5152,10 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
                                         "Segment" => "",
                                         "Premise" => "",
                                         "Factory_Address" => "",
-                                        "state" => $state,
-                                        "city" => $city,
-                                        "Taluka" => $taluka,
-                                        "Area" => $area,
+                                        "state" => $ind_estate_data["state_id"],
+                                        "city" => $ind_estate_data["city_id"],
+                                        "Taluka" => $ind_estate_data["taluka"],
+                                        "Area" => $ind_estate_data["area_id"],
                                         "IndustrialEstate" => $industrial_estate,
                                         "loan_applied" => "",
                                         "Completion_Date" => "",
@@ -5239,10 +5231,10 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
                                         "Segment" => "",
                                         "Premise" => "",
                                         "Factory_Address" => "",
-                                        "state" => $state,
-                                        "city" => $city,
-                                        "Taluka" => $taluka,
-                                        "Area" => $area,
+                                        "state" => $ind_estate_data["state_id"],
+                                        "city" => $ind_estate_data["city_id"],
+                                        "Taluka" => $ind_estate_data["taluka"],
+                                        "Area" => $ind_estate_data["area_id"],
                                         "IndustrialEstate" => $industrial_estate,
                                         "loan_applied" => "",
                                         "Completion_Date" => "",
@@ -5303,11 +5295,10 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
                                         "Category" => "",
                                         "Segment" => "",
                                         "Premise" => "",
-                                        "Factory_Address" => "",
-                                        "state" => $state,
-                                        "city" => $city,
-                                        "Taluka" => $taluka,
-                                        "Area" => $area,
+                                        "state" => $ind_estate_data["state_id"],
+                                        "city" => $ind_estate_data["city_id"],
+                                        "Taluka" => $ind_estate_data["taluka"],
+                                        "Area" => $ind_estate_data["area_id"],
                                         "IndustrialEstate" => $industrial_estate,
                                         "loan_applied" => "",
                                         "Completion_Date" => "",
@@ -5354,115 +5345,104 @@ $app->post('/add_additional_road', 'authenticateUser', function () use ($app) {
                         }
                     }
                 }
-                else
-                {
-                    $flag=1;
-                }
             }
-        }
 
-        if ($from_plotno_road != "" && $from_plotno_road != null) {
+          
 
-            $check_road = $db->check_road($road_number, $industrial_estate_id);
-            if ($check_road == 0) {
-
-            // for additional plot in road wise
-            if ($road_plot_cnt > 0) {
-                for ($c = 0; $c < $road_plot_cnt; $c++) {
-                    $additional_plotno = strtoupper($additional_plot[$c]->additional_plotno_road);
-                    if ($additional_plotno != "" || $additional_plotno != null) {
-                        //$to_plot="";
-                        $to_plot = NULL;
-                        $resp_plot = $db->pr_estate_roadplot($industrial_estate_id, $road_number, $additional_plotno, $to_plot, $userid);
+            if ($from_plotno_road != "" && $from_plotno_road != null) {
 
 
-                        $cp = array(
-                            "post_fields" => array(
-                                "source" => "",
-                                "Source_Name" => "",
-                                "Contact_Name" => "",
-                                "Mobile_No" => "",
-                                "Email" => "",
-                                "Designation_In_Firm" => "",
-                                "Firm_Name" => "",
-                                "GST_No" => "",
-                                "Type_of_Company" => "",
-                                "Category" => "",
-                                "Segment" => "",
-                                "Premise" => "",
-                                "Factory_Address" => "",
-                                "state" => $state,
-                                "city" => $city,
-                                "Taluka" => $taluka,
-                                "Area" => $area,
-                                "IndustrialEstate" => $industrial_estate,
-                                "loan_applied" => "",
-                                "Completion_Date" => "",
-                                "Term_Loan_Amount" => "",
-                                "CC_Loan_Amount" => "",
-                                "Under_Process_Bank" => "",
-                                "Under_Process_Branch" => "",
-                                "Term_Loan_Amount_In_Process" => "",
-                                "Under_Process_Date" => "",
-                                "ROI" => "",
-                                "Colletral" => "",
-                                "Consultant" => "",
-                                "Sanctioned_Bank" => "",
-                                "Bank_Branch" => "",
-                                "DOS" => "",
-                                "TL_Amount" => "",
-                                "Sactioned_Loan_Consultant" => "",
-                                "category_type" => "",
-                                "Remarks" => ""
-                            ),
-                            "inq_submit" => "Submit",
-                            "bad_lead_reason" => "",
-                            "bad_lead_reason_remark" => "",
-                            "Image" => "",
-                            "Constitution" => "",
-                            "Status" => "",
-                            "plot_details" => array(
-                                array(
-                                    "Plot_No" => $additional_plotno,
-                                    "Floor" => "0",
-                                    "Road_No" => $road_number,
-                                    "Plot_Status" => "",
-                                    "Plot_Id" => "1",
+
+                // for additional plot in road wise
+                if ($road_plot_cnt > 0) {
+                    for ($c = 0; $c < $road_plot_cnt; $c++) {
+                        $additional_plotno = strtoupper($additional_plot[$c]->additional_plotno_road);
+                        if ($additional_plotno != "" || $additional_plotno != null) {
+                            //$to_plot="";
+                            $to_plot = NULL;
+                            $resp_plot = $db->pr_estate_roadplot($industrial_estate_id, $road_number, $additional_plotno, $to_plot, $userid);
+
+
+                            $cp = array(
+                                "post_fields" => array(
+                                    "source" => "",
+                                    "Source_Name" => "",
+                                    "Contact_Name" => "",
+                                    "Mobile_No" => "",
+                                    "Email" => "",
+                                    "Designation_In_Firm" => "",
+                                    "Firm_Name" => "",
+                                    "GST_No" => "",
+                                    "Type_of_Company" => "",
+                                    "Category" => "",
+                                    "Segment" => "",
+                                    "Premise" => "",
+                                    "Factory_Address" => "",
+                                    "state" => $ind_estate_data["state_id"],
+                                    "city" => $ind_estate_data["city_id"],
+                                    "Taluka" => $ind_estate_data["taluka"],
+                                    "Area" => $ind_estate_data["area_id"],
+                                    "IndustrialEstate" => $industrial_estate,
+                                    "loan_applied" => "",
+                                    "Completion_Date" => "",
+                                    "Term_Loan_Amount" => "",
+                                    "CC_Loan_Amount" => "",
+                                    "Under_Process_Bank" => "",
+                                    "Under_Process_Branch" => "",
+                                    "Term_Loan_Amount_In_Process" => "",
+                                    "Under_Process_Date" => "",
+                                    "ROI" => "",
+                                    "Colletral" => "",
+                                    "Consultant" => "",
+                                    "Sanctioned_Bank" => "",
+                                    "Bank_Branch" => "",
+                                    "DOS" => "",
+                                    "TL_Amount" => "",
+                                    "Sactioned_Loan_Consultant" => "",
+                                    "category_type" => "",
+                                    "Remarks" => ""
                                 ),
-                            )
-                        );
+                                "inq_submit" => "Submit",
+                                "bad_lead_reason" => "",
+                                "bad_lead_reason_remark" => "",
+                                "Image" => "",
+                                "Constitution" => "",
+                                "Status" => "",
+                                "plot_details" => array(
+                                    array(
+                                        "Plot_No" => $additional_plotno,
+                                        "Floor" => "0",
+                                        "Road_No" => $road_number,
+                                        "Plot_Status" => "",
+                                        "Plot_Id" => "1",
+                                    ),
+                                )
+                            );
 
-                        $json = json_encode($cp);
+                            $json = json_encode($cp);
 
 
-                        $resp_tdrawdata = $db->tbl_tdrawdata($json, $userid);
+                            $resp_tdrawdata = $db->tbl_tdrawdata($json, $userid);
 
-                        $resp_company_plot = $db->company_plot_insert($additional_plotno, $floor, $road_number, $plot_id, $industrial_estate_id, $userid);
+                            $resp_company_plot = $db->company_plot_insert($additional_plotno, $floor, $road_number, $plot_id, $industrial_estate_id, $userid);
+                        }
                     }
                 }
             }
-
-        }
-        else{
-            $flag=1;
-        }
-
+            
+        } else {
+            $flag = 1;
         }
     }
 
 
-    if($flag==1)
-    {
+    if ($flag == 1) {
         $data['message'] = "Road already exists!";
         $data['success'] = false;
-    }
-
-    else if ($resp_tdrawdata > 0) {
+    } else if ($resp_tdrawdata > 0) {
         $data['message'] = "Data added successfully";
         $data['success'] = true;
-    }
-    
-    else {
+    } else {
         $data['message'] = "An error occurred";
         $data['success'] = false;
     }
