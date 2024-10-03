@@ -1601,9 +1601,19 @@ if(isset($_COOKIE["msg"]) )
 
     <!-- Basic Bootstrap Table -->
     <div class="card">
-      <h5 class="card-header">Records</h5>
-      <div class="table-responsive text-nowrap">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Records</h5>
+        <input type="button" class="btn btn-primary" name="btn_excel" value="Download Excel" 
+               onClick="javascript:plottingGrid('<?php echo isset($_REQUEST['state_id']) ? $_REQUEST['state_id'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['city_id']) ? $_REQUEST['city_id'] : "" ?>',
+                                               '<?php echo isset($_COOKIE['taluka']) ? $_COOKIE['taluka'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['area_id']) ? $_REQUEST['area_id'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['industrial_estate']) ? $_REQUEST['industrial_estate'] : "" ?>')" 
+               id="btn_excel">
+    </div>
+    <div class="table-responsive text-nowrap">
         <table class="table table-hover" id="table_id">
+           
           <thead>
             <tr>
               <th></th>
@@ -1649,8 +1659,9 @@ if(isset($_COOKIE["msg"]) )
             
           </tbody>
         </table>
-      </div>
     </div>
+</div>
+
     <!--/ Basic Bootstrap Table -->
 
   <!-- / grid -->
@@ -2259,6 +2270,12 @@ if(isset($_COOKIE["msg"]) )
   {
     $('#'+div).remove();
   }
+  function plottingGrid(state_id,city_id,taluka,area_id,industrial_estate){
+    const arr = [state_id,city_id,taluka,area_id,industrial_estate];
+    window.open('unassigned_estate_plotting_excel.php', '_blank');
+    document.cookie = "report_search="+arr;
+  }
+
 
 </script>
 

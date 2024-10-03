@@ -176,7 +176,18 @@ if(isset($_COOKIE["msg"]) )
 
     <!-- Basic Bootstrap Table -->
     <div class="card">
-      <h5 class="card-header">Records</h5>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Records</h5>
+        <input type="button" class="btn btn-primary" name="btn_excel" value="Download Excel" 
+               onClick="javascript:plottingGrid('<?php echo isset($_REQUEST['name']) ? $_REQUEST['name'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['city_id']) ? $_REQUEST['city_id'] : "" ?>',
+                                               '<?php echo isset($_COOKIE['taluka']) ? $_COOKIE['taluka'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['area_id']) ? $_REQUEST['area_id'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['industrial_estate']) ? $_REQUEST['industrial_estate'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['start_dt']) ? $_REQUEST['start_dt'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['end_dt']) ? $_REQUEST['end_dt'] : "" ?>')" 
+               id="btn_excel">
+    </div>
       <div class="table-responsive text-nowrap">
         <table class="table table-hover" id="table_id">
           <thead>
@@ -338,6 +349,11 @@ if(isset($_COOKIE["msg"]) )
         $('#end_date_modal').prop("readonly",true);
       }
     });
+  }
+  function plottingGrid(name,city_id,taluka,area_id,industrial_estate,start_dt,end_dt){
+    const arr = [name,city_id,taluka,area_id,industrial_estate,start_dt,end_dt];
+    window.open('assigned_estate_company_excel.php', '_blank');
+    document.cookie = "report_search="+arr;
   }
 </script>
 
