@@ -21,11 +21,18 @@ $stmt_list->close();
 
 ?>
 
-<h4 class="fw-bold py-3 mb-4">Industrial Estate List</h4>
-
   <!-- Basic Bootstrap Table -->
     <div class="card">
-      <div class="col-md-9"><h5 class="card-header">Industrial Estate List</h5></div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="col-md-9"><h5 class="card-header">Industrial Estate List</h5></div>
+      <input type="button" class="btn btn-primary" name="btn_excel" value="Download Excel" 
+               onClick="javascript:estateGrid('<?php echo isset($_REQUEST['name']) ? $_REQUEST['name'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['city_id']) ? $_REQUEST['city_id'] : "" ?>',
+                                               '<?php echo isset($_COOKIE['taluka']) ? $_COOKIE['taluka'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['area_id']) ? $_REQUEST['area_id'] : "" ?>',
+                                               '<?php echo isset($_REQUEST['industrial_estate']) ? $_REQUEST['industrial_estate'] : "" ?>',)" 
+               id="btn_excel">
+    </div>
       <div class="table-responsive text-nowrap">
         <table class="table" id="table_id">
           <thead>
@@ -74,6 +81,11 @@ $stmt_list->close();
     // window.open('company_plot_report.php?estate_id='+estate_id, '_blank');
     window.open('company_plot_report.php', '_blank');
     createCookie("report_estate_id",estate_id,1);
+  }
+  function estateGrid(name,city_id,taluka,area_id,industrial_estate){
+    const arr = [name,city_id,taluka,area_id,industrial_estate];
+    window.open('estate_list_excel.php', '_blank');
+    document.cookie = "report_search="+arr;
   }
 
 </script>
