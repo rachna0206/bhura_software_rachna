@@ -982,6 +982,8 @@ $app->post('/add_industrial_estates', 'authenticateUser', function () use ($app)
     $description = '';
     $res_add_estate = $db->add_industrial_estate($state, $city, $taluka, $area, $industrial_estate, $description, $plotting_pattern, $location, $userid, $verify_status);
     if ($res_add_estate > 0) {
+
+        
         $industrial_estate_id = $res_add_estate;
         // add multiple estate images
         foreach ($_FILES["est_images"]['name'] as $key => $value) {
@@ -2818,6 +2820,8 @@ $app->post('/insert_company', 'authenticateUser', function () use ($app) {
         $data['message'] = "An error occurred";
         $data['success'] = false;
     } else {
+        
+
         if ($completion_date != "") {
             $db->insert_tdrawdata_cdates($id, $user_id, $completion_date);
         }
@@ -2880,6 +2884,9 @@ $app->post('/insert_company', 'authenticateUser', function () use ($app) {
 
 
         if ($result_rawassign > 0) {
+            
+           
+            
             $data['message'] = "Data added successfully";
             $data['success'] = true;
         } else {

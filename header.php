@@ -43,7 +43,7 @@ $stmt_scheme->execute();
 $scheme_result = $stmt_scheme->get_result();
 $stmt_scheme->close();
 
-$adminmenu=array("company_plot_report.php","assign_estate.php","unassigned_estate_company.php","assign_estate_plotting.php","unassigned_estate_plotting.php","add_industrial_estate.php","add_industrial_estate_old.php","company_entry.php","estate_plotting_report.php","estate_status_report.php","visit_count_report.php","scheme.php","stages.php","pr_file_format.php","logged_users","employee_master.php","company_add_plot.php","company_add_plot_est.php","company_add_plot_com.php","update_status.php","logged_users.php","estate_list.php");
+$adminmenu=array("company_plot_report.php","assign_estate.php","unassigned_estate_company.php","assign_estate_plotting.php","unassigned_estate_plotting.php","add_industrial_estate.php","add_industrial_estate_old.php","company_entry.php","estate_plotting_report.php","estate_status_report.php","visit_count_report.php","scheme.php","stages.php","pr_file_format.php","logged_users","employee_master.php","company_add_plot.php","company_add_plot_est.php","company_add_plot_com.php","update_status.php","logged_users.php","estate_list.php","user_report.php");
 
 $processmenu=array("process_gogtp_ir.php","process_gogtp_pt.php","process.php");
 /*function checkCompany_rawassign($value)
@@ -277,6 +277,11 @@ function check_for_badlead($value)
                   <div data-i18n="course">Visit Report</div>
                   </a>
                 </li>
+                <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"])=="user_report.php"?"active":"" ?>">
+                <a href="user_report.php" class="menu-link">
+                <div data-i18n="course">User Report</div>
+                </a>
+              </li>
                 <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"])=="logged_users.php"?"active":"" ?>">
                   <a href="logged_users.php" class="menu-link">
                   <div data-i18n="course">View Logged-in Users</div>
@@ -328,6 +333,7 @@ function check_for_badlead($value)
                 <div data-i18n="course">Add Plotting In Company (Without Estate)</div>
                 </a>
               </li>
+              
 
               </ul>
             </li>

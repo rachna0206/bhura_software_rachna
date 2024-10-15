@@ -2,7 +2,7 @@
 date_default_timezone_set("Asia/Kolkata");
 class DbOperation
 {
-    private $con;
+    public $con;
 
     function __construct()
     {
@@ -268,6 +268,10 @@ public function add_industrial_estate($state,$city,$taluka,$area,$industrial_est
     $stmt->close();
     
     if($Resp){
+        // add in user activity
+        $operation="Industrial estate added";
+        $comp_id="";
+        $this->add_user_activity($userid,$insert_id,$comp_id,$operation);
 
         //$res_estate_details=$this->pr_add_industrialestate_details($insert_id,$plotting_pattern,$location,$userid,$verify_status);
 
@@ -833,7 +837,27 @@ public function insert_followup($user_id,$id,$followup_text,$followup_source,$fo
     $Resp=$stmt_followup->execute();
     $stmt_followup->close();
 
+    //get company id 
+    
+   /* $stmt_pr_comp=$this->con->prepare("select * from pr_company_details where rawdata_id=?");
+    $stmt_pr_comp->bind_param("i",$id);
+    $stmt_pr_comp->execute();
+    $resp_pr_comp=$stmt_pr_comp->get_result()->fetch_assoc();
+    $stmt_pr_comp->close();
+
+    //get industrial estate id
+    $ind_id=$this->get_industiral_estate_id($resp_pr_comp["industrial_estate"]);
+    print_r($ind_id);
+    //add user activity
+    $operation="Follow up added";
+
+    $this->add_user_activity($user_id,$ind_id["id"], $$resp_pr_comp["id"],$operation);*/
+   
+    
     return $Resp;
+
+    
+
 }
 
 // insert into tbl_tdrawassign
@@ -844,6 +868,8 @@ public function insert_rawassign($id,$admin_userid,$raw_assign_status)
     $stmt_status->bind_param("iis",$id,$admin_userid,$raw_assign_status);
     $Resp=$stmt_status->execute();
     $stmt_status->close();
+
+    
 }
 
 //insert into tbl_tdbadleads
@@ -885,6 +911,12 @@ public function insert_pr_company_detail($source,$source_name,$contact_person,$c
       $Resp=$stmt_pr_company_detail->execute();
       $last_insert_company_id = mysqli_insert_id($this->con);
       $stmt_pr_company_detail->close();
+     
+
+      // add user activity 
+      $operation="Company added";
+            
+      $this->add_user_activity($user_id,$industrial_estate_id, $last_insert_company_id,$operation);
       
       if($update_location==true){
         $stmt_pr_company_plot = $this->con->prepare("UPDATE `pr_company_plots` SET `plot_status`=?, `company_id`=?, `user_id`=?, `location`=? WHERE `pid`=?");
@@ -896,6 +928,7 @@ public function insert_pr_company_detail($source,$source_name,$contact_person,$c
       }
       $Resp=$stmt_pr_company_plot->execute();
       $stmt_pr_company_plot->close();
+      
     }
     else{
 
@@ -903,6 +936,11 @@ public function insert_pr_company_detail($source,$source_name,$contact_person,$c
       $stmt_pr_company_detail->bind_param("ssssssssssssssiisi",$source,$source_name,$contact_person,$contact_no,$firm_name,$gst_no,$category,$segment,$premise,$remark,$inq_submit,$PicFileName,$constitution,$status,$user_id,$id,$existing_expansion_status,$pr_company_detail_id);
       $Resp=$stmt_pr_company_detail->execute();
       $stmt_pr_company_detail->close();
+      
+       // add user activity 
+       $operation="Company updated";
+            
+       $this->add_user_activity($user_id,$industrial_estate_id, $pr_company_detail_id,$operation);
 
       if($update_location==true){
         $stmt_pr_company_plot = $this->con->prepare("UPDATE `pr_company_plots` SET `plot_status`=?, `company_id`=?, `user_id`=?, `location`=? WHERE `pid`=?");
@@ -913,6 +951,7 @@ public function insert_pr_company_detail($source,$source_name,$contact_person,$c
         $stmt_pr_company_plot->bind_param("siii",$plot_status,$pr_company_detail_id,$user_id,$pr_company_plot_id);
       }
       $Resp=$stmt_pr_company_plot->execute();
+     
       $stmt_pr_company_plot->close();
     }
     return $Resp;
@@ -1426,6 +1465,30 @@ public function check_road($road_number,$industrial_estate_id)
     $count_result = $stmt_count->get_result()->num_rows;
     $stmt_count->close();
     return $count_result;
+}
+
+
+//add user acivity
+private function add_user_activity($userid,$industrial_estate,$comp_id,$operation)
+{
+    $stmt_activity = $this->con->prepare("INSERT INTO `pr_user_activity`( `industrial_estate_id`, `company_id`, `user_id`, `operation`) VALUES (?,?,?,?)");
+    $stmt_activity->bind_param("siis",$industrial_estate,$comp_id,$userid,$operation);
+    $resp_add=$stmt_activity->execute();
+    
+    $stmt_activity->close();
+    return $resp_add;
+}
+
+
+//get industrial estate id
+private function get_industiral_estate_id($industrial_estate)
+{
+    $stmt_activity = $this->con->prepare("select * from tbl_industrial_estate where industrial_estate=?");
+    $stmt_activity->bind_param("s",$industrial_estate);
+    $stmt_activity->execute();
+    $resp_add=$stmt_activity->get_result()->fetch_assoc();
+    $stmt_activity->close();
+    return $resp_add;
 }
 
 
