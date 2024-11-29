@@ -2278,7 +2278,7 @@ $app->post('/get_company_details', 'authenticateUser', function () use ($app) {
         $pr_comp_status = "";
 
         $res_company_plot = $db->get_pr_company_details($res_pattern['plotting_pattern'], $estate_id, $plot_no, $floor_no, $road_no);
-
+        
         if ($res_company_plot) {
             $pr_comp_status = $res_company_plot["status"];
 
@@ -2374,7 +2374,7 @@ $app->post('/get_company_details', 'authenticateUser', function () use ($app) {
                                 // get company status (positive/negative/existing) from tbl_tdrawassign
                                 $rawassign_status = $db->get_tbl_tdrawassign($plot['id']);
                                 if (mysqli_num_rows($rawassign_status) > 0) {
-                                    $status_res = mysqli_fetch_array($status_result);
+                                    $status_res = mysqli_fetch_array($rawassign_status);
                                     if ($status_res['stage'] == "lead") {
                                         $status = "Positive";
                                     } else if ($status_res['stage'] == "badlead" || $status_res['stage'] == "revisedbadlead") {
@@ -4240,7 +4240,9 @@ $app->post('/assign_lead', 'authenticateUser', function () use ($app) {
 
     $result_rawassign = $db->insert_rawassign($inq_id, $selected_user_id, $raw_assign_status);
 
-    $result_followup = $db->insert_followup($loggedin_user_id, $inq_id, $followup_text, $followup_source, $followup_date);
+    $operation="Assign Lead";
+
+    $result_followup = $db->insert_followup($loggedin_user_id, $inq_id, $followup_text, $followup_source, $followup_date,$operation);
 
     if ($result_followup > 0) {
         $data['message'] = "Data added successfully";
@@ -4288,7 +4290,8 @@ $app->post('/assign_multiple_lead', 'authenticateUser', function () use ($app) {
     for ($i = 0; $i < $inq_ids_cnt; $i++) {
         $result_rawassign = $db->insert_rawassign($inq_ids[$i], $selected_user_id, $raw_assign_status);
 
-        $result_followup = $db->insert_followup($loggedin_user_id, $inq_ids[$i], $followup_text, $followup_source, $followup_date);
+        $operation="Assign Lead";
+        $result_followup = $db->insert_followup($loggedin_user_id, $inq_ids[$i], $followup_text, $followup_source, $followup_date,$operation);
     }
 
     if ($result_followup > 0) {

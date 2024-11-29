@@ -53,11 +53,140 @@ if (isset($_REQUEST['btnsubmit'])) {
   /*echo "SELECT p1.pid, c1.rawdata_id, r1.raw_data->>'$.post_fields.Firm_Name' as firm_name, r1.raw_data->>'$.post_fields.GST_No' as gst_no, i1.area_id, i1.city_id, i1.industrial_estate, p1.plot_no, p1.floor, p1.road_no, p1.plot_status, r1.raw_data->>'$.post_fields.Contact_Name' as contact_person, r1.raw_data->>'$.post_fields.Mobile_No' as contact_number, c1.status, c1.constitution, r1.raw_data->>'$.post_fields.Remarks' as remark, r1.raw_data->>'$.post_fields.Segment' as segment FROM `pr_company_plots` p1 JOIN `tbl_industrial_estate` i1 ON p1.industrial_estate_id=i1.id LEFT JOIN `pr_company_details` c1 ON p1.company_id=c1.cid LEFT JOIN `tbl_tdrawdata` r1 ON c1.rawdata_id=r1.id WHERE 1 ".$firm_name_str.$gst_no_str.$status_str.$plot_status_str.$ind_estate_str.$contact_person_str.$contact_number_str." ORDER BY p1.industrial_estate_id, abs(p1.plot_no)";*/
 
   $stmt_list = $obj->con1->prepare("SELECT p1.pid, c1.rawdata_id, r1.raw_data->>'$.post_fields.Firm_Name' as firm_name, r1.raw_data->>'$.post_fields.GST_No' as gst_no, i1.area_id, i1.city_id, i1.industrial_estate, p1.plot_no, p1.floor, p1.road_no, p1.plot_status, r1.raw_data->>'$.post_fields.Contact_Name' as contact_person, r1.raw_data->>'$.post_fields.Mobile_No' as contact_number, c1.status, c1.constitution, r1.raw_data->>'$.post_fields.Remarks' as remark, r1.raw_data->>'$.post_fields.Segment' as segment FROM `pr_company_plots` p1 JOIN `tbl_industrial_estate` i1 ON p1.industrial_estate_id=i1.id LEFT JOIN `pr_company_details` c1 ON p1.company_id=c1.cid LEFT JOIN `tbl_tdrawdata` r1 ON c1.rawdata_id=r1.id WHERE 1 " . $firm_name_str . $gst_no_str . $status_str . $plot_status_str . $ind_estate_str . $contact_person_str . $contact_number_str . " ORDER BY p1.industrial_estate_id, abs(p1.road_no), abs(p1.plot_no), p1.floor");
+
+
   $stmt_list->execute();
   $result = $stmt_list->get_result();
 
   $stmt_list->close();
+}
 
+if (isset($_REQUEST["flg"]) && $_REQUEST["flg"] == "del") {
+
+  $plot_id = $_REQUEST["n_id"];
+
+  // delete data from pr comnay plots & tdrawdata
+  try {
+
+    //get data from tbl_tdrawdata
+    $stmt_estate = $obj->con1->prepare("select * from pr_company_plots p, tbl_industrial_estate e1 where  industrial_estate_id=e1.id and p.pid=?");
+    $stmt_estate->bind_param("i", $plot_id);
+    $stmt_estate->execute();
+    $plot_data = $stmt_estate->get_result()->fetch_assoc();
+    $stmt_estate->close();
+
+
+
+    $stmt_plot =  $obj->con1->prepare("SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($plot_data["taluka"]) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($plot_data["industrial_estate"]) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($plot_data["area_id"]) . "%' AND JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', '" . $plot_data["plot_no"] . "'))
+  AND JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Road_No','" . $plot_data["road_no"] . "'))");
+    $stmt_plot->execute();
+    $plot_res = $stmt_plot->get_result();
+    $stmt_plot->close();
+
+    $estate = mysqli_fetch_array($plot_res);
+    // Decode JSON into a PHP associative array
+    $data = json_decode($estate["raw_data"], true);
+
+
+
+
+    // Check if plot_details array exists in the JSON data
+    if (isset($data['plot_details']) && is_array($data['plot_details'])) {
+      //echo "plot found";
+      // Loop through plot_details array and delete the object with matching Plot_Id
+      foreach ($data['plot_details'] as $key => $plot) {
+
+        if ($plot['Plot_No'] === $plot_data["plot_no"]) {
+
+
+          unset($data['plot_details'][$key]);
+        }
+      }
+
+      // Re-index the array to keep a continuous index
+      $data['plot_details'] = array_values($data['plot_details']);
+    } else {
+      // echo "No plot_details array found in the JSON data.\n";
+    }
+
+    // Encode back to JSON
+    $updatedJsonData = json_encode($data);
+
+
+    //delete from pr_company_plot tbl
+    $stmt_del = $obj->con1->prepare("delete from pr_company_plots where pid='" . $plot_id . "'");
+    $Resp = $stmt_del->execute();
+
+    //update tbl_tdrawdata
+    $stmt_update = $obj->con1->prepare("update tbl_tdrawdata set raw_data=?, userid=? where id=?");
+    $stmt_update->bind_param("sii", $updatedJsonData, $estate["userid"], $estate["id"]);
+
+    $Resp_update = $stmt_update->execute();
+    $num_rows_aff = mysqli_affected_rows($obj->con1);
+    $stmt_update->close();
+
+
+
+    if (!$Resp) {
+      throw new Exception("Problem in deleting! " . strtok($obj->con1->error,  '('));
+    }
+    $stmt_del->close();
+  } catch (\Exception  $e) {
+    setcookie("sql_error", urlencode($e->getMessage()), time() + 3600, "/");
+  }
+
+  if ($Resp) {
+    setcookie("msg", "data_del", time() + 3600, "/");
+    header("location:company_plot_report.php");
+  } else {
+    setcookie("msg", "fail", time() + 3600, "/");
+    header("location:company_plot_report.php");
+  }
+}
+?>
+<?php
+if (isset($_COOKIE["msg"])) {
+
+
+  if ($_COOKIE['msg'] == "data_del") {
+
+?>
+    <div class="alert alert-primary alert-dismissible" role="alert">
+      Data deleted succesfully
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+      </button>
+    </div>
+    <script type="text/javascript">
+      eraseCookie("msg")
+    </script>
+  <?php
+  }
+  if ($_COOKIE['msg'] == "fail") {
+  ?>
+
+    <div class="alert alert-danger alert-dismissible" role="alert">
+      An error occured! Try again.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+      </button>
+    </div>
+    <script type="text/javascript">
+      eraseCookie("msg")
+    </script>
+  <?php
+  }
+}
+if (isset($_COOKIE["sql_error"])) {
+  ?>
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <?php echo urldecode($_COOKIE['sql_error']) ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+    </button>
+  </div>
+
+  <script type="text/javascript">
+    eraseCookie("sql_error")
+  </script>
+<?php
 }
 ?>
 
@@ -223,6 +352,7 @@ if (isset($_REQUEST['btnsubmit'])) {
           <th>Constitution</th>
           <th>Remark</th>
           <th>Segment</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody class="table-border-bottom-0" id="grid">
@@ -260,7 +390,7 @@ if (isset($_REQUEST['btnsubmit'])) {
             }
           }
 
-          ?>
+        ?>
           <tr class="table-<?php echo $table_colour ?>">
             <td><?php echo $i ?></td>
             <td><?php echo $data['firm_name'] ?></td>
@@ -275,8 +405,12 @@ if (isset($_REQUEST['btnsubmit'])) {
             <td><?php echo $data['constitution'] ?></td>
             <td><?php echo $data['remark'] ?></td>
             <td><?php echo $data['segment'] ?></td>
+            <td>
+              <a href="javascript:editdata('<?php echo $data["pid"] ?>');"><i class="bx bx-edit-alt me-1"></i> </a>
+              <a href="javascript:deletedata('<?php echo $data["pid"] ?>');"><i class="bx bx-trash me-1"></i> </a>
+            </td>
           </tr>
-          <?php
+        <?php
           $i++;
         } ?>
 
@@ -288,7 +422,6 @@ if (isset($_REQUEST['btnsubmit'])) {
 <!--/ Basic Bootstrap Table -->
 
 <script type="text/javascript">
-
   function companyGrid(firm_name, gst_no, industrial_estate, status, plot_status, contact_person, contact_number) {
     const arr = [firm_name, gst_no, industrial_estate, status, plot_status, contact_person, contact_number];
     window.open('company_plot_grid.php', '_blank');
@@ -301,6 +434,19 @@ if (isset($_REQUEST['btnsubmit'])) {
     window.open('company_plot_excel.php', '_blank');
   }
 
+  function deletedata(id) {
+    if (confirm("Are you sure to DELETE data?")) {
+      var loc = "company_plot_report.php?flg=del&n_id=" + id;
+      window.location = loc;
+    }
+  }
+
+  function editdata(id) {
+
+    createCookie("edit_plot", id, 1);
+    window.location = "edit_plot.php";
+
+  }
 </script>
 
 <?php

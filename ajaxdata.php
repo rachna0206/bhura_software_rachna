@@ -2522,7 +2522,7 @@ if(isset($_REQUEST['action']))
 		$html.='<div class="row">
                   <div class="mb-3" id="road_list_div_est" '.(($plotting_pattern=="Road")?"":"hidden").'>
                     <label class="form-label" for="road_no_est">Road No.</label>
-                    <select name="road_no_est" id="road_no_est" class="form-control" onchange="getRoadPlots_companyPlot(this.value,industrial_estate_id_est.value)" required>
+                    <select name="road_no_est" id="road_no_est" class="form-control" onchange="getRoadPlots_companyPlot(this.value,industrial_estate_id_est.value)" >
                       <option value="">Select Road No.</option>';
             
             if($plotting_pattern=="Road"){

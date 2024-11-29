@@ -99,21 +99,21 @@ if (isset($_COOKIE["sql_error"])) {
     <!-- grid -->
 
     <!-- Basic Bootstrap Table -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Records</h5>
+    <div class="card mb-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
 
-            <form method="post" class="d-flex gap-3 align-items-center" hx-post="user_report_filter_table.php" hx-target="#table_body">
-                <div class="">
-                    <label for="">Start Date: </label>
+            <form method="post" class="d-flex gap-3 align-items-center" hx-post="user_report_filter_table.php"
+                hx-target="#table_body,#table_caption" hx-swap="multi:#table_caption:outeHTML,#table_body:outerHTML">
+                <div class="input-group">
+                    <label class="input-group-text">Start Date</label>
                     <input type="date" name="start_date" id="start_date" class="form-control">
                 </div>
-                <div class="">
-                    <label for="">End Date: </label>
+                <div class="input-group">
+                    <label class="input-group-text">End Date</label>
                     <input type="date" name="end_date" id="end_date" class="form-control">
                 </div>
-                <div class="">
-                    <label for="">User: </label>
+                <div class="input-group">
+                    <!-- <label class="input-group-text">User</label> -->
                     <select name="select_user_id" id="select_user_id" class="form-select">
                         <option value="">Select User</option>
                         <?php
@@ -146,6 +146,9 @@ if (isset($_COOKIE["sql_error"])) {
                                                '<?php echo isset($_REQUEST['operation']) ? $_REQUEST['operation'] : "" ?>',
                                                '<?php echo isset($_REQUEST['date_time']) ? $_REQUEST['date_time'] : "" ?>')" id="btn_excel">
         </div>
+    </div>
+
+    <div class="card">
         <div class="table-responsive text-nowrap">
             <table class="table table-hover" id="table_id">
                 <thead>
@@ -158,6 +161,7 @@ if (isset($_COOKIE["sql_error"])) {
                         <th>date time</th>
                     </tr>
                 </thead>
+                <caption class="caption-top fw-bold fst-italic text-dark" id="table_caption"></caption>
                 <tbody class="table-border-bottom-0" id="table_body">
                     <?php
 
@@ -167,7 +171,7 @@ if (isset($_COOKIE["sql_error"])) {
                     // tbl_/pr_company
                 
                     // $stmt_list = $obj->con1->prepare("SELECT cid, industrial_estate, area, taluka, company_id, sum(count) as total_count FROM pr_visit_count group by company_id");
-                    $stmt_list = $obj->con1->prepare("SELECT * FROM pr_user_activity LEFT JOIN tbl_users ON user_id = tbl_users.id LEFT JOIN tbl_company ON company_id = tbl_company.id LEFT JOIN tbl_industrial_estate ON industrial_estate_id = tbl_industrial_estate.id");
+                    $stmt_list = $obj->con1->prepare("SELECT * FROM pr_user_activity p1, tbl_users u1 where user_id = u1.id  group by p1.industrial_estate,p1.company,p1.user_id,p1.operation,p1.date_time order by p1.id desc;");
                     $stmt_list->execute();
                     $result = $stmt_list->get_result();
                     $stmt_list->close();
@@ -179,7 +183,7 @@ if (isset($_COOKIE["sql_error"])) {
                         <tr>
                             <td><?php echo $i ?></td>
                             <td><?php echo $data["industrial_estate"] ?></td>
-                            <td><?php echo $data["company"] ?></td>
+                            <td><?php echo ($data["company"]!="")?$data["company"]:"-" ?></td>
                             <td><?php echo $data["name"] ?></td>
                             <td><?php echo $data["operation"] ?></td>
                             <td><?php echo date("d-m-Y h:i A", strtotime($data["date_time"])) ?></td>
