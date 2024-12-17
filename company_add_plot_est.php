@@ -78,7 +78,7 @@ if(isset($_COOKIE["msg"]) )
       <h5 class="card-header">Records (Estate)</h5>
       <div class="table-responsive text-nowrap">
         <table class="table table-hover" id="table_id">
-          <?php if(in_array($user_id, $admin)){ ?>
+          <?php //if(in_array($user_id, $admin)){ ?>
             <thead>
               <tr>
                 <th>Srno</th>
@@ -117,7 +117,8 @@ if(isset($_COOKIE["msg"]) )
                   $i++;
                 }
               ?>
-            <?php } else{ ?>
+            <?php
+          /* } else{ ?>
                 <thead>
                   <tr>
                     <th>Srno</th>
@@ -183,7 +184,8 @@ if(isset($_COOKIE["msg"]) )
                   ?>
                   
                 </tbody>
-            <?php } ?>  
+            <?php }*/
+             ?>  
             </tbody>
         </table>
       </div>

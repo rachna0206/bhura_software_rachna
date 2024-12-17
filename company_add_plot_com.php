@@ -99,7 +99,8 @@ if(isset($_COOKIE["msg"]) )
 
 
     <!-- Basic Bootstrap Table -->
-    <?php if(!in_array($user_id, $admin)){ ?>
+    <?php
+    /* if(!in_array($user_id, $admin)){ ?>
     <div class="card">
       <h5 class="card-header">Records (Company)</h5>
       <div class="table-responsive text-nowrap">
@@ -183,9 +184,10 @@ if(isset($_COOKIE["msg"]) )
       </div>
     </div>
 
-  <?php } ?>
+  <?php } 
+  */?>
 
-  <?php if(in_array($user_id, $admin)){ ?>
+  <?php //if(in_array($user_id, $admin)){ ?>
     <div class="card">
       <h5 class="card-header">Records (Company)</h5>
       <div class="table-responsive text-nowrap">
@@ -233,7 +235,7 @@ if(isset($_COOKIE["msg"]) )
       </div>
     </div>
 
-  <?php } ?>
+  <?php // } ?>
     <!--/ Basic Bootstrap Table -->
 
   <!-- / grid -->
