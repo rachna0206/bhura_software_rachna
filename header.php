@@ -36,8 +36,8 @@ $stmt_emp->execute();
 $emp_result = $stmt_emp->get_result();
 $stmt_emp->close();
 
-$stmt_scheme = $obj->con1->prepare("SELECT * FROM `tbl_service_master` WHERE service IN ('GOGTP IR', 'GOGTP PT') AND id = ?");
-$stmt_scheme->bind_param("i", $user_id);
+$stmt_scheme = $obj->con1->prepare("SELECT * FROM `tbl_service_master` WHERE service IN ('GOGTP IR', 'GOGTP PT')");
+// $stmt_scheme->bind_param("i", $user_id);
 $stmt_scheme->execute();
 $scheme_result = $stmt_scheme->get_result();
 $stmt_scheme->close();
@@ -302,6 +302,19 @@ function check_for_badlead($value)
                     <div data-i18n="course">File Format</div>
                   </a>
                 </li>
+                <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "scheme.php" ? "active" : "" ?>">
+                  <a href="scheme.php" class="menu-link">
+                    <div data-i18n="course">Scheme</div>
+                  </a>
+                </li>
+                <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "stages.php" ? "active" : "" ?>">
+                  <a href="stages.php" class="menu-link">
+                    <div data-i18n="course">Stages</div>
+                  </a>
+                </li>
+
+
+
 
               <?php } ?>
 
@@ -342,6 +355,7 @@ function check_for_badlead($value)
                   <div data-i18n="course">Add Plotting In Company (Without Estate)</div>
                 </a>
               </li>
+
 
             </ul>
           </li>
