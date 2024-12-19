@@ -302,7 +302,7 @@ function check_for_badlead($value)
                     <div data-i18n="course">File Format</div>
                   </a>
                 </li>
-                <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "scheme.php" ? "active" : "" ?>">
+                <!-- <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "scheme.php" ? "active" : "" ?>">
                   <a href="scheme.php" class="menu-link">
                     <div data-i18n="course">Scheme</div>
                   </a>
@@ -311,7 +311,7 @@ function check_for_badlead($value)
                   <a href="stages.php" class="menu-link">
                     <div data-i18n="course">Stages</div>
                   </a>
-                </li>
+                </li> -->
 
 
 
