@@ -24,11 +24,10 @@ while ($row = mysqli_fetch_array($admin_result)) {
 
 $user_id = $_SESSION["id"];
 
-$stmt_username = $obj->con1->prepare("SELECT u1.id,u1.email,u1.role,u1.user_type,d1.department_name FROM `tbl_users` u1,tbl_department_master d1 where u1.department=d1.id and u1.id=?");
+$stmt_username = $obj->con1->prepare("SELECT * FROM `tbl_users` WHERE id=?");
 $stmt_username->bind_param("i", $user_id);
 $stmt_username->execute();
 $username_result = $stmt_username->get_result()->fetch_assoc();
-$user_department=strtolower($username_result["department_name"]);
 $stmt_username->close();
 
 $stmt_emp = $obj->con1->prepare("SELECT DISTINCT(i1.taluka) FROM assign_estate a1, tbl_industrial_estate i1 WHERE a1.industrial_estate_id=i1.id and employee_id=? and start_dt<=curdate() and end_dt>=curdate() and action='company_entry'");
@@ -222,7 +221,7 @@ function check_for_badlead($value)
             </a>
 
             <ul class="menu-sub">
-            <?php if (strpos($user_department,"admin")!== false || strpos($user_department,"assignor/verifier")!== false) { ?>
+
               <li
                 class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
                 <a href="add_industrial_estate.php" class="menu-link">
@@ -230,7 +229,7 @@ function check_for_badlead($value)
                 </a>
               </li>
 
-              
+              <?php if (in_array($user_id, $admin)) { ?>
                 <li
                   class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "unassigned_estate_plotting.php" ? "active" : "" ?>">
                   <a href="unassigned_estate_plotting.php" class="menu-link">
@@ -315,17 +314,11 @@ function check_for_badlead($value)
                 </li> -->
 
 
-               
+
 
               <?php } ?>
 
-              <?php if (strpos($user_department,"sales")!== false || strpos($user_department,"admin")!== false) { ?>
-                <li
-                class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
-                <a href="add_industrial_estate.php" class="menu-link">
-                  <div data-i18n="course">Add Industrial Estate</div>
-                </a>
-              </li>
+              <?php if (!in_array($user_id, $admin)) { ?>
 
                 <li
                   class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate_old.php" ? "active" : "" ?>">
@@ -340,7 +333,16 @@ function check_for_badlead($value)
                       <div data-i18n="course">Add Company</div>
                     </a>
                   </li>
-                  <li
+                <?php }
+              } ?>
+
+              <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "" ? "active" : "" ?>">
+                <a href="employee_master.php" class="menu-link">
+                  <div data-i18n="course">Employee Master</div>
+                </a>
+              </li>
+
+              <li
                 class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "company_add_plot_est.php" ? "active" : "" ?>">
                 <a href="company_add_plot_est.php" class="menu-link">
                   <div data-i18n="course">Add Plotting In Company (With Estate)</div>
@@ -353,24 +355,12 @@ function check_for_badlead($value)
                   <div data-i18n="course">Add Plotting In Company (Without Estate)</div>
                 </a>
               </li>
-                <?php }
-              } ?>
-              <?php if (strpos($user_department,"process")!== false || strpos($user_department,"admin")!== false) { ?>
-
-              <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "" ? "active" : "" ?>">
-                <a href="employee_master.php" class="menu-link">
-                  <div data-i18n="course">Employee Master</div>
-                </a>
-              </li>
-              <?php
-              }?>
-           
 
 
             </ul>
           </li>
 
-          <?php if (strpos($user_department,"process")!== false) { ?>
+          <?php if (!in_array($user_id, $admin)) { ?>
 
             <li
               class="menu-item <?php echo in_array(basename($_SERVER["PHP_SELF"]), $processmenu) ? "active open" : "" ?> ">
