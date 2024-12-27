@@ -222,7 +222,7 @@ function check_for_badlead($value)
             </a>
 
             <ul class="menu-sub">
-            <?php if (strpos($user_department,"admin")!== false || strpos($user_department,"assignor/verifier")!== false) { ?>
+            <?php if ($user_department=="admin" || $user_department=="assignor/verifier") { ?>
               <li
                 class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
                 <a href="add_industrial_estate.php" class="menu-link">
@@ -319,7 +319,9 @@ function check_for_badlead($value)
 
               <?php } ?>
 
-              <?php if (strpos($user_department,"sales")!== false || strpos($user_department,"admin")!== false) { ?>
+              <?php
+                
+              if ($user_department=="sales" || $user_department== "admin") { ?>
                 <li
                 class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
                 <a href="add_industrial_estate.php" class="menu-link">
@@ -334,7 +336,7 @@ function check_for_badlead($value)
                   </a>
                 </li>
 
-                <?php if (mysqli_num_rows($emp_result) > 0) { ?>
+                <?php if ((mysqli_num_rows($emp_result) > 0) || $user_department== "admin") { ?>
                   <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "company_entry.php" ? "active" : "" ?>">
                     <a href="company_entry.php" class="menu-link">
                       <div data-i18n="course">Add Company</div>
@@ -355,7 +357,7 @@ function check_for_badlead($value)
               </li>
                 <?php }
               } ?>
-              <?php if (strpos($user_department,"process")!== false || strpos($user_department,"admin")!== false) { ?>
+              <?php if ($user_department=="subsidy process" || $user_department=="loan process" || $user_department== "admin") { ?>
 
               <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "" ? "active" : "" ?>">
                 <a href="employee_master.php" class="menu-link">
@@ -370,7 +372,7 @@ function check_for_badlead($value)
             </ul>
           </li>
 
-          <?php if (strpos($user_department,"process")!== false) { ?>
+          <?php if ($user_department=="subsidy process" || $user_department=="loan process" || $user_department== "admin" ) { ?>
 
             <li
               class="menu-item <?php echo in_array(basename($_SERVER["PHP_SELF"]), $processmenu) ? "active open" : "" ?> ">
