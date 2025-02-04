@@ -222,14 +222,21 @@ function check_for_badlead($value)
             </a>
 
             <ul class="menu-sub">
-            <?php if ($user_department=="admin" || $user_department=="assignor/verifier") { ?>
+            <?php
+              if ($user_department=="sales" || $user_department== "admin" || $user_department=="assignor/verifier" ) {
+              
+              ?>
               <li
                 class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
                 <a href="add_industrial_estate.php" class="menu-link">
                   <div data-i18n="course">Add Industrial Estate</div>
                 </a>
               </li>
-
+              
+              <?php 
+              }
+              if ($user_department=="admin" || $user_department=="assignor/verifier") {
+                ?>
               
                 <li
                   class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "unassigned_estate_plotting.php" ? "active" : "" ?>">
@@ -329,12 +336,7 @@ function check_for_badlead($value)
               <?php
                 
               if ($user_department=="sales" || $user_department== "admin") { ?>
-                <li
-                class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
-                <a href="add_industrial_estate.php" class="menu-link">
-                  <div data-i18n="course">Add Industrial Estate</div>
-                </a>
-              </li>
+                
 
                 <li
                   class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate_old.php" ? "active" : "" ?>">
