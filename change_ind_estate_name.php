@@ -33,7 +33,8 @@ if (isset($_REQUEST["btnsubmit"])) {
 
     //check plot/estate entry in tdrawdata
 
-    echo "SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($taluka) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($industrial_estate) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($area) . "%'";
+    //echo "SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($taluka) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($industrial_estate) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($area) . "%'";
+
     $stmt_plot =  $obj->con1->prepare("SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($taluka) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($industrial_estate) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($area) . "%'");
     $stmt_plot->execute();
     $plot_res = $stmt_plot->get_result();
@@ -60,11 +61,11 @@ if (isset($_REQUEST["btnsubmit"])) {
         if(mysqli_affected_rows($obj->con1)>0){
 
             setcookie("msg", "update",time()+3600,"/");
-         //   header("location:change_ind_estate_name.php");
+           // header("location:change_ind_estate_name.php");
         }
         else{
             setcookie("msg", "fail",time()+3600,"/");
-        //    header("location:change_ind_estate_name.php");
+           // header("location:change_ind_estate_name.php");
         }
     }
 }
