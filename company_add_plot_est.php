@@ -10,7 +10,7 @@ include("company_add_plot_excel.php");
 if (isset($_REQUEST['download_single'])) {
   try {
     // Prepare the query
-    $stmt = $obj->con1->prepare("
+    /*$stmt = $obj->con1->prepare("
           SELECT 
               r1.id, 
               r1.raw_data->>'$.post_fields.Firm_Name' AS firm_name, 
@@ -33,14 +33,94 @@ if (isset($_REQUEST['download_single'])) {
               AND JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 
               AND raw_data->'$.post_fields.IndustrialEstate' != '' 
               AND r1.id NOT IN (SELECT rawdata_id FROM pr_company_details)
-      ");
-    $stmt->bind_param("sss", $_REQUEST["taluka"], $_REQUEST["area_id"], $_REQUEST["industrial_estate"]);
+      ");*/
+
+      $stmt=$obj->con1->prepare("SELECT 
+    r1.id, 
+    r1.raw_data->>'$.post_fields.Firm_Name' AS firm_name, 
+    r1.raw_data->>'$.post_fields.Factory_Address' AS factory_address, 
+    r1.raw_data->>'$.post_fields.Mobile_No' AS mobile_no,
+    r1.raw_data->>'$.post_fields.Contact_Name' AS contact_name, 
+    r1.raw_data->>'$.post_fields.Taluka'  as taluka,
+    r1.raw_data->>'$.post_fields.Area' as area,
+    r1.raw_data->>'$.post_fields.IndustrialEstate' as industrial_estate,
+    ta.stage, 
+    CASE 
+        WHEN ta.stage = 'lead' THEN 'Positive' 
+        WHEN ta.stage = 'badlead' THEN 'Negative' 
+        ELSE 'Existing Client' 
+    END AS stage1,
+    u1.name AS emp_name
+FROM tbl_tdrawdata r1
+LEFT JOIN (
+    -- Get latest stage from tbl_tdrawassign
+    SELECT inq_id, stage, user_id
+    FROM tbl_tdrawassign
+    WHERE (inq_id, id) IN (
+        SELECT inq_id, MAX(id)
+        FROM tbl_tdrawassign
+        GROUP BY inq_id
+    )
+) ta ON ta.inq_id = r1.id
+LEFT JOIN tbl_users u1 ON ta.user_id = u1.id
+WHERE 
+    ta.stage NOT IN ('applicationstart', 'schemesstarted') -- Exclude records where stage requires tbl_tdtatassign
+    AND r1.raw_data->'$.post_fields.Taluka' = ?
+    AND r1.raw_data->'$.post_fields.Area' =?
+    AND r1.raw_data->'$.post_fields.IndustrialEstate' = ?
+    AND JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 
+    AND raw_data->'$.post_fields.IndustrialEstate' != '' 
+    AND r1.id NOT IN (SELECT rawdata_id FROM pr_company_details)
+
+UNION 
+
+SELECT 
+    r1.id, 
+    r1.raw_data->>'$.post_fields.Firm_Name' AS firm_name, 
+    r1.raw_data->>'$.post_fields.Factory_Address' AS factory_address, 
+    r1.raw_data->>'$.post_fields.Mobile_No' AS mobile_no,
+    r1.raw_data->>'$.post_fields.Contact_Name' AS contact_name, 
+   
+    r1.raw_data->>'$.post_fields.Taluka'  as taluka,
+    r1.raw_data->>'$.post_fields.Area' as area,
+    r1.raw_data->>'$.post_fields.IndustrialEstate' as industrial_estate,
+     ta2.tatassign_status AS stage, 
+    NULL AS stage1, 
+    u1.name AS emp_name
+FROM tbl_tdrawdata r1
+LEFT JOIN (
+    -- Get latest assignment from tbl_tdtatassign only when stage is applicationstart or schemesstarted
+    SELECT a1.tatassign_inq_id AS inq_id, 
+           a1.tatassign_status, 
+           a1.tatassign_user_id
+    FROM tbl_tdtatassign a1
+    WHERE (a1.tatassign_inq_id, a1.tatassign_id) IN (
+        SELECT tatassign_inq_id, MAX(tatassign_id)
+        FROM tbl_tdtatassign
+        GROUP BY tatassign_inq_id
+    )
+) ta2 ON ta2.inq_id = r1.id
+LEFT JOIN tbl_users u1 ON ta2.tatassign_user_id = u1.id
+WHERE 
+    EXISTS (
+        SELECT 1 FROM tbl_tdrawassign ta 
+        WHERE ta.inq_id = r1.id 
+        AND ta.stage IN ('applicationstart', 'schemesstarted')
+    ) -- Only include when stage is applicationstart or schemesstarted
+    AND r1.raw_data->'$.post_fields.Taluka' = ?
+    AND r1.raw_data->'$.post_fields.Area' = ?
+    AND r1.raw_data->'$.post_fields.IndustrialEstate' = ?
+    AND JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 
+    AND raw_data->'$.post_fields.IndustrialEstate' != '' 
+    AND r1.id NOT IN (SELECT rawdata_id FROM pr_company_details)");
+
+    $stmt->bind_param("ssssss", $_REQUEST["taluka"], $_REQUEST["area_id"], $_REQUEST["industrial_estate"],$_REQUEST["taluka"], $_REQUEST["area_id"], $_REQUEST["industrial_estate"]);
     $stmt->execute();
     $res = $stmt->get_result();
     $stmt->close();
 
     $file_name = "excel_" . uniqid() . ".xlsx";
-    dynamic_excel_generate($res, $file_name);
+    dynamic_excel_generate(result: $res, $file_name);
 
     header('Content-Type: application/octet-stream');
     header('Content-Disposition: attachment; filename=' . basename($file_name));
@@ -179,7 +259,7 @@ if (isset($_REQUEST["btn_excel"])) {
       </thead>
       <tbody class="table-border-bottom-0">
         <?php
-        $stmt_list = $obj->con1->prepare("SELECT i1.* from (SELECT DISTINCT json_unquote(raw_data->'$.post_fields.Taluka') as taluka, json_unquote(raw_data->'$.post_fields.Area') as area, json_unquote(raw_data->'$.post_fields.IndustrialEstate') as ind_estate FROM tbl_tdrawdata WHERE JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 and raw_data->'$.post_fields.IndustrialEstate'!='') tbl1, tbl_industrial_estate i1 where tbl1.taluka=i1.taluka and tbl1.area=i1.area_id and tbl1.ind_estate=i1.industrial_estate and id not in (SELECT rawdata_id from pr_company_details) order by i1.taluka,i1.area_id,i1.industrial_estate");
+        $stmt_list = $obj->con1->prepare("SELECT i1.* from (SELECT DISTINCT json_unquote(raw_data->'$.post_fields.Taluka') as taluka, json_unquote(raw_data->'$.post_fields.Area') as area, json_unquote(raw_data->'$.post_fields.IndustrialEstate') as ind_estate,(select stage END from tbl_tdrawassign where inq_id=i1.id order by id desc LIMIT 1) stage FROM tbl_tdrawdata WHERE JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 and raw_data->'$.post_fields.IndustrialEstate'!='') tbl1, tbl_industrial_estate i1 where tbl1.taluka=i1.taluka and tbl1.area=i1.area_id and tbl1.ind_estate=i1.industrial_estate and id not in (SELECT rawdata_id from pr_company_details) order by i1.taluka,i1.area_id,i1.industrial_estate");
         $stmt_list->execute();
         $result = $stmt_list->get_result();
         $stmt_list->close();
