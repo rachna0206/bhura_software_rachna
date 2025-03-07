@@ -9,7 +9,88 @@ include("company_add_plot_excel.php");
 <?php
 if (isset($_REQUEST['download_single'])) {
   try {
-    $stmt = $obj->con1->prepare("SELECT r1.id, r1.raw_data->>'$.post_fields.Firm_Name' as firm_name, r1.raw_data->>'$.post_fields.Factory_Address' as factory_address, r1.raw_data->>'$.post_fields.Mobile_No' as mobile_no,r1.raw_data->>'$.post_fields.Contact_Name' as contact_name, (select stage END from tbl_tdrawassign where inq_id=r1.id order by id desc LIMIT 1) stage, (select CASE WHEN stage='lead' THEN 'Positive' WHEN stage='badlead' THEN 'Negative' ELSE 'Existing Client' END from tbl_tdrawassign where inq_id=r1.id order by id desc LIMIT 1) stage1 from tbl_tdrawdata r1 where r1.raw_data->'$.post_fields.city'='" . $_REQUEST["city"] . "' and r1.raw_data->'$.post_fields.Taluka'='" . $_REQUEST["taluka"] . "' and r1.raw_data->'$.post_fields.Area'='" . $_REQUEST["area"] . "' and JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 and raw_data->'$.post_fields.IndustrialEstate'='' and id not in (SELECT rawdata_id from pr_company_details)");
+   // $stmt = $obj->con1->prepare("SELECT r1.id, r1.raw_data->>'$.post_fields.Firm_Name' as firm_name, r1.raw_data->>'$.post_fields.Factory_Address' as factory_address, r1.raw_data->>'$.post_fields.Mobile_No' as mobile_no,r1.raw_data->>'$.post_fields.Contact_Name' as contact_name, (select stage END from tbl_tdrawassign where inq_id=r1.id order by id desc LIMIT 1) stage, (select CASE WHEN stage='lead' THEN 'Positive' WHEN stage='badlead' THEN 'Negative' ELSE 'Existing Client' END from tbl_tdrawassign where inq_id=r1.id order by id desc LIMIT 1) stage1 from tbl_tdrawdata r1 where r1.raw_data->'$.post_fields.city'='" . $_REQUEST["city"] . "' and r1.raw_data->'$.post_fields.Taluka'='" . $_REQUEST["taluka"] . "' and r1.raw_data->'$.post_fields.Area'='" . $_REQUEST["area"] . "' and JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 and raw_data->'$.post_fields.IndustrialEstate'='' and id not in (SELECT rawdata_id from pr_company_details)");
+
+   $stmt=$obj->con1->prepare("SELECT 
+    r1.id, 
+    r1.raw_data->>'$.post_fields.Firm_Name' AS firm_name, 
+    r1.raw_data->>'$.post_fields.Factory_Address' AS factory_address, 
+    r1.raw_data->>'$.post_fields.Mobile_No' AS mobile_no,
+    r1.raw_data->>'$.post_fields.Contact_Name' AS contact_name, 
+    r1.raw_data->>'$.post_fields.Taluka'  as taluka,
+    r1.raw_data->>'$.post_fields.Area' as area,
+    r1.raw_data->>'$.post_fields.city' as city,
+    ta.stage, 
+    CASE 
+        WHEN ta.stage = 'lead' THEN 'Positive' 
+        WHEN ta.stage = 'badlead' THEN 'Negative' 
+        ELSE 'Existing Client' 
+    END AS stage1,
+    u1.name AS emp_name
+FROM tbl_tdrawdata r1
+LEFT JOIN (
+    
+    SELECT inq_id, stage, user_id
+    FROM tbl_tdrawassign
+    WHERE (inq_id, id) IN (
+        SELECT inq_id, MAX(id)
+        FROM tbl_tdrawassign
+        GROUP BY inq_id
+    )
+) ta ON ta.inq_id = r1.id
+LEFT JOIN tbl_users u1 ON ta.user_id = u1.id
+WHERE 
+    ta.stage NOT IN ('applicationstart', 'schemesstarted')
+    AND r1.raw_data->'$.post_fields.Taluka' = '" . $_REQUEST["taluka"] . "'
+    AND r1.raw_data->'$.post_fields.Area' ='" . $_REQUEST["area"] . "'
+    AND r1.raw_data->'$.post_fields.city' = '" . $_REQUEST["city"] . "'
+    AND JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 
+    AND raw_data->'$.post_fields.IndustrialEstate' = '' 
+    AND r1.id NOT IN (SELECT rawdata_id FROM pr_company_details)
+
+UNION 
+
+SELECT 
+    r1.id, 
+    r1.raw_data->>'$.post_fields.Firm_Name' AS firm_name, 
+    r1.raw_data->>'$.post_fields.Factory_Address' AS factory_address, 
+    r1.raw_data->>'$.post_fields.Mobile_No' AS mobile_no,
+    r1.raw_data->>'$.post_fields.Contact_Name' AS contact_name, 
+   
+    r1.raw_data->>'$.post_fields.Taluka'  as taluka,
+    r1.raw_data->>'$.post_fields.Area' as area,
+    r1.raw_data->>'$.post_fields.city' as city,
+     ta2.tatassign_status AS stage, 
+    NULL AS stage1, 
+    u1.name AS emp_name
+FROM tbl_tdrawdata r1
+LEFT JOIN (
+   
+    SELECT a1.tatassign_inq_id AS inq_id, 
+           a1.tatassign_status, 
+           a1.tatassign_user_id
+    FROM tbl_tdtatassign a1
+    WHERE (a1.tatassign_inq_id, a1.tatassign_id) IN (
+        SELECT tatassign_inq_id, MAX(tatassign_id)
+        FROM tbl_tdtatassign
+        GROUP BY tatassign_inq_id
+    )
+) ta2 ON ta2.inq_id = r1.id
+LEFT JOIN tbl_users u1 ON ta2.tatassign_user_id = u1.id
+WHERE 
+    EXISTS (
+        SELECT 1 FROM tbl_tdrawassign ta 
+        WHERE ta.inq_id = r1.id 
+        AND ta.stage IN ('applicationstart', 'schemesstarted')
+    )
+    AND r1.raw_data->'$.post_fields.Taluka' = '" . $_REQUEST["taluka"] . "'
+    AND r1.raw_data->'$.post_fields.Area' = '" . $_REQUEST["area"] . "'
+    AND r1.raw_data->'$.post_fields.city' = '" . $_REQUEST["city"] . "'
+    AND JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 
+    AND raw_data->'$.post_fields.IndustrialEstate' = '' 
+    AND r1.id NOT IN (SELECT rawdata_id FROM pr_company_details)");
+
+
     $stmt->execute();
     $res = $stmt->get_result();
     $stmt->close();
