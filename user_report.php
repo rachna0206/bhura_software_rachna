@@ -176,8 +176,12 @@ if (isset($_COOKIE["sql_error"])) {
                     $result = $stmt_list->get_result();
                     $stmt_list->close();
                     $i = 1;
+                    $flag=0;
 
                     while ($data = mysqli_fetch_array($result)) {
+                        
+                        if($flag==0)
+                        {
                         ?>
 
                         <tr>
@@ -189,6 +193,17 @@ if (isset($_COOKIE["sql_error"])) {
                             <td><?php echo date("d-m-Y h:i A", strtotime($data["date_time"])) ?></td>
                         </tr>
                         <?php
+                        }
+                        
+                        if($data["operation"]=="Company added")
+                        {
+                            $flag=1;
+
+                        }
+                        else
+                        {
+                            $flag=0;
+                        }
                         $i++;
                     }
                     ?>
