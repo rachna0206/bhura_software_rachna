@@ -1,8 +1,8 @@
 <?php
+echo "hello there";
 include "header.php";
-
+error_reporting(E_ALL);
 $service_id = $_COOKIE['service_id'];
-echo "SELECT DISTINCT(s1.stage_name), a1.service_id, a1.stage_id from (select MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdstages s1 where tbl1.assign_id=a1.tatassign_id and a1.stage_id=s1.stage_id and a1.tatassign_user_id=? and a1.service_id=? and a1.stage_id in (select DISTINCT(stage_id) from pr_file_format where scheme_id=?)";
 $stmt_stage = $obj->con1->prepare("SELECT DISTINCT(s1.stage_name), a1.service_id, a1.stage_id from (select MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdstages s1 where tbl1.assign_id=a1.tatassign_id and a1.stage_id=s1.stage_id and a1.tatassign_user_id=? and a1.service_id=? and a1.stage_id in (select DISTINCT(stage_id) from pr_file_format where scheme_id=?)");
 $stmt_stage->bind_param("iii", $user_id, $service_id, $service_id);
 $stmt_stage->execute();
@@ -176,25 +176,24 @@ if (isset($_COOKIE["sql_error"])) {
 
 
 
+
+<!-- accordian test -->
 <div class="col-md mb-4 mb-md-0">
     <!-- <small class="text-light fw-semibold">Basic Accordion</small> -->
     <div class="accordion mt-3" id="accordionExample">
         <?php
         $j = 0;
-        while ($data = mysqli_fetch_array($stage_result)) {
-            $app_data = json_decode($data["app_data"]);
-            $company_details = $app_data->company_details;
-            $contact_details = $app_data->contact_details;
+        while ($stage = mysqli_fetch_array($stage_result)) {
             ?>
             <div class="card accordion-item">
                 <h2 class="accordion-header" id="headingOne">
                     <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
                         data-bs-target="#accordion<?php echo $j ?>" aria-expanded="false"
-                        aria-controls="accordion<?php echo $j ?>">Company Name :
-                        <?php echo $company_details->cname . " ( " . $contact_details->mobile . " )"; ?></button>
+                        aria-controls="accordion<?php echo $j ?>"><?php echo $stage['stage_name'] ?></button>
                 </h2>
 
-                <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse show"
+                    data-bs-parent="#accordionExample">
                     <div class="accordion-body">
 
 
@@ -203,26 +202,27 @@ if (isset($_COOKIE["sql_error"])) {
                             <div class="accordion mt-3" id="accordionCompany">
 
                                 <?php
-                                $claim_str = ($claim == 1) ? " AND s1.stage_type='Claim'" : " AND s1.stage_type!='Claim'";
-
-                                $stmt_list = $obj->con1->prepare("SELECT s1.* FROM (SELECT DISTINCT(stage_id) as stage_id FROM `pr_file_format` WHERE scheme_id=?) tbl, tbl_tdstages s1 WHERE tbl.stage_id=s1.stage_id" . $claim_str);
-                                $stmt_list->bind_param("i", $service_id);
+                                $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.stage_id=? and a1.service_id=?");
+                                $stmt_list->bind_param("iii", $user_id, $stage['stage_id'], $stage['service_id']);
                                 $stmt_list->execute();
                                 $result = $stmt_list->get_result();
                                 $stmt_list->close();
                                 $i = 1;
 
-                                while ($stage = mysqli_fetch_array($result)) {
+                                while ($data = mysqli_fetch_array($result)) {
+                                    $row_data = json_decode($data["raw_data"]);
+                                    $post_fields = $row_data->post_fields;
                                     ?>
 
                                     <div class="card shadow-none bg-transparent border border-info mb-3 accordion-item">
                                         <h2 class="accordion-header" id="headingOne">
                                             <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
                                                 data-bs-target="#compAccordion<?php echo $i ?>" aria-expanded="false"
-                                                aria-controls="compAccordion<?php echo $i ?>"><?php echo $stage["stage_name"] ?></button>
+                                                aria-controls="compAccordion<?php echo $i ?>">Company Name :
+                                                <?php echo $post_fields->Firm_Name ?></button>
                                         </h2>
 
-                                        <div id="compAccordion<?php echo $i ?>" class="accordion-collapse collapse"
+                                        <div id="compAccordion<?php echo $i ?>" class="accordion-collapse collapse show"
                                             data-bs-parent="#accordionCompany">
                                             <div class="accordion-body">
 
@@ -326,7 +326,7 @@ if (isset($_COOKIE["sql_error"])) {
     </div>
 </div>
 
-
+<!-- accorduian test end -->
 
 
 

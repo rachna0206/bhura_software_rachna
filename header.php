@@ -28,7 +28,7 @@ $stmt_username = $obj->con1->prepare("SELECT u1.id,u1.email,u1.role,u1.user_type
 $stmt_username->bind_param("i", $user_id);
 $stmt_username->execute();
 $username_result = $stmt_username->get_result()->fetch_assoc();
-$user_department=strtolower($username_result["department_name"]);
+$user_department = strtolower($username_result["department_name"]);
 $stmt_username->close();
 
 $stmt_emp = $obj->con1->prepare("SELECT DISTINCT(i1.taluka) FROM assign_estate a1, tbl_industrial_estate i1 WHERE a1.industrial_estate_id=i1.id and employee_id=? and start_dt<=curdate() and end_dt>=curdate() and action='company_entry'");
@@ -37,13 +37,13 @@ $stmt_emp->execute();
 $emp_result = $stmt_emp->get_result();
 $stmt_emp->close();
 
-$stmt_scheme = $obj->con1->prepare("SELECT * FROM `tbl_service_master` WHERE service IN ('GOGTP IR', 'GOGTP PT')");
+$stmt_scheme = $obj->con1->prepare("SELECT * FROM `tbl_service_master` WHERE service IN ('GOGTP IR', 'GOGTP PT' , 'PRE-INWARD')");
 // $stmt_scheme->bind_param("i", $user_id);
 $stmt_scheme->execute();
 $scheme_result = $stmt_scheme->get_result();
 $stmt_scheme->close();
 
-$adminmenu = array("company_plot_report.php", "assign_estate.php", "unassigned_estate_company.php", "assign_estate_plotting.php", "unassigned_estate_plotting.php", "add_industrial_estate.php", "add_industrial_estate_old.php", "company_entry.php", "estate_plotting_report.php", "estate_status_report.php", "visit_count_report.php", "scheme.php", "stages.php", "pr_file_format.php", "logged_users", "employee_master.php", "company_add_plot.php", "company_add_plot_est.php", "company_add_plot_com.php", "update_status.php", "logged_users.php", "estate_list.php","change_ind_estate_name.php");
+$adminmenu = array("company_plot_report.php", "assign_estate.php", "unassigned_estate_company.php", "assign_estate_plotting.php", "unassigned_estate_plotting.php", "add_industrial_estate.php", "add_industrial_estate_old.php", "company_entry.php", "estate_plotting_report.php", "estate_status_report.php", "visit_count_report.php", "scheme.php", "stages.php", "pr_file_format.php", "logged_users", "employee_master.php", "company_add_plot.php", "company_add_plot_est.php", "company_add_plot_com.php", "update_status.php", "logged_users.php", "estate_list.php", "change_ind_estate_name.php");
 
 $processmenu = array("process_gogtp_ir.php", "process_gogtp_pt.php", "process.php");
 /*function checkCompany_rawassign($value)
@@ -171,6 +171,10 @@ function check_for_badlead($value)
         createCookie("service_id", service_id);
         window.location = "process_gogtp_pt.php";
       }
+      else if (service_name == "PRE-INWARD") {
+        createCookie("service_id", service_id);
+        window.location = "process_preinward.php";
+      }
       else {
         createCookie("service_id", service_id);
         window.location = "process.php";
@@ -189,7 +193,9 @@ function check_for_badlead($value)
         <div class="app-brand demo">
           <a href="#" class="app-brand-link">
 
-            <span class="app-brand-text demo menu-text fw-bolder ms-0"><h4>Bhura Consultancy</h4></span>
+            <span class="app-brand-text demo menu-text fw-bolder ms-0">
+              <h4>Bhura Consultancy</h4>
+            </span>
           </a>
 
           <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -222,22 +228,22 @@ function check_for_badlead($value)
             </a>
 
             <ul class="menu-sub">
-            <?php
-              if ($user_department=="sales" || $user_department== "admin" || $user_department=="assignor/verifier" ) {
-              
-              ?>
-              <li
-                class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
-                <a href="add_industrial_estate.php" class="menu-link">
-                  <div data-i18n="course">Add Industrial Estate</div>
-                </a>
-              </li>
-              
-              <?php 
-              }
-              if ($user_department=="admin" || $user_department=="assignor/verifier") {
+              <?php
+              if ($user_department == "sales" || $user_department == "admin" || $user_department == "assignor/verifier") {
+
                 ?>
-              
+                <li
+                  class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate.php" ? "active" : "" ?>">
+                  <a href="add_industrial_estate.php" class="menu-link">
+                    <div data-i18n="course">Add Industrial Estate</div>
+                  </a>
+                </li>
+
+                <?php
+              }
+              if ($user_department == "admin" || $user_department == "assignor/verifier") {
+                ?>
+
                 <li
                   class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "unassigned_estate_plotting.php" ? "active" : "" ?>">
                   <a href="unassigned_estate_plotting.php" class="menu-link">
@@ -329,14 +335,14 @@ function check_for_badlead($value)
                 </li> -->
 
 
-               
+
 
               <?php } ?>
 
               <?php
-                
-              if ($user_department=="sales" || $user_department== "admin") { ?>
-                
+
+              if ($user_department == "sales" || $user_department == "admin") { ?>
+
 
                 <li
                   class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "add_industrial_estate_old.php" ? "active" : "" ?>">
@@ -345,43 +351,43 @@ function check_for_badlead($value)
                   </a>
                 </li>
 
-                <?php if ((mysqli_num_rows($emp_result) > 0) || $user_department== "admin") { ?>
+                <?php if ((mysqli_num_rows($emp_result) > 0) || $user_department == "admin") { ?>
                   <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "company_entry.php" ? "active" : "" ?>">
                     <a href="company_entry.php" class="menu-link">
                       <div data-i18n="course">Add Company</div>
                     </a>
                   </li>
                   <li
-                class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "company_add_plot_est.php" ? "active" : "" ?>">
-                <a href="company_add_plot_est.php" class="menu-link">
-                  <div data-i18n="course">Add Plotting In Company (With Estate)</div>
-                </a>
-              </li>
+                    class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "company_add_plot_est.php" ? "active" : "" ?>">
+                    <a href="company_add_plot_est.php" class="menu-link">
+                      <div data-i18n="course">Add Plotting In Company (With Estate)</div>
+                    </a>
+                  </li>
 
-              <li
-                class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "company_add_plot_com.php" ? "active" : "" ?>">
-                <a href="company_add_plot_com.php" class="menu-link">
-                  <div data-i18n="course">Add Plotting In Company (Without Estate)</div>
-                </a>
-              </li>
+                  <li
+                    class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "company_add_plot_com.php" ? "active" : "" ?>">
+                    <a href="company_add_plot_com.php" class="menu-link">
+                      <div data-i18n="course">Add Plotting In Company (Without Estate)</div>
+                    </a>
+                  </li>
                 <?php }
               } ?>
-              <?php if ($user_department=="subsidy process" || $user_department=="loan process" || $user_department== "admin") { ?>
+              <?php if ($user_department == "subsidy process" || $user_department == "loan process" || $user_department == "admin") { ?>
 
-              <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "" ? "active" : "" ?>">
-                <a href="employee_master.php" class="menu-link">
-                  <div data-i18n="course">Employee Master</div>
-                </a>
-              </li>
-              <?php
-              }?>
-           
+                <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "" ? "active" : "" ?>">
+                  <a href="employee_master.php" class="menu-link">
+                    <div data-i18n="course">Employee Master</div>
+                  </a>
+                </li>
+                <?php
+              } ?>
+
 
 
             </ul>
           </li>
 
-          <?php if ($user_department=="subsidy process" || $user_department=="loan process" || $user_department== "admin" ) { ?>
+          <?php if ($user_department == "subsidy process" || $user_department == "loan process" || $user_department == "admin") { ?>
 
             <li
               class="menu-item <?php echo in_array(basename($_SERVER["PHP_SELF"]), $processmenu) ? "active open" : "" ?> ">
@@ -392,7 +398,7 @@ function check_for_badlead($value)
 
               <ul class="menu-sub">
                 <?php while ($scheme = mysqli_fetch_array($scheme_result)) {
-                  $isActive = (basename($_SERVER["PHP_SELF"]) == "process_gogtp_ir.php" && $scheme['service'] == "GOGTP IR") || (basename($_SERVER["PHP_SELF"]) == "process_gogtp_pt.php" && $scheme['service'] == "GOGTP PT") || (basename($_SERVER["PHP_SELF"]) == "process.php" && !in_array($scheme['service'], ["GOGTP IR", "GOGTP PT"]));
+                  $isActive = (basename($_SERVER["PHP_SELF"]) == "process_gogtp_ir.php" && $scheme['service'] == "GOGTP IR") || (basename($_SERVER["PHP_SELF"]) == "process_gogtp_pt.php" && $scheme['service'] == "GOGTP PT") || (basename($_SERVER["PHP_SELF"]) == "process.php" && !in_array($scheme['service'], ["GOGTP IR", "GOGTP PT"]) || (basename($_SERVER["PHP_SELF"]) == "process_preinward.php" && $scheme['service'] == "PRE-INWARD"));
                   ?>
                   <li class="menu-item <?php echo $isActive ? "active" : "" ?>">
                     <a href="javascript:process_pages('<?php echo $scheme['service'] ?>','<?php echo $scheme['id'] ?>');"
