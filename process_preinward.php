@@ -1,5 +1,4 @@
 <?php
-echo "hello there";
 include "header.php";
 error_reporting(E_ALL);
 $service_id = $_COOKIE['service_id'];
@@ -87,13 +86,13 @@ if (isset($_REQUEST['btn_update_agreement_format'])) {
     $at_time_of_sanction = $_REQUEST['at_time_of_sanction'];
     $at_time_of_visit = $_REQUEST['at_time_of_visit'];
     $at_time_of_refund = $_REQUEST['at_time_of_refund'];
-    $company_type = $_REQUEST['company_type'];
     $marketing_executive_name = $_REQUEST['marketing_executive_name'];
     $status = 'Completed';
 
     try {
+        echo "UPDATE pr_files_data SET file_data = JSON_SET(file_data, '$.scheme_name', '".$scheme_name."', '$.contact_person' , '".$contact_person."', '$.designation' , '".$designation."', '$.contact_no' , '".$contact_no."', '$.receivable_amount' , '".$receivable_amount."', '$.electricity_duty_exemption' , '".$electricity_duty_exemption."', '$.at_time_of_sanction' , '".$at_time_of_sanction."', '$.at_time_of_visit' , '".$at_time_of_visit."', '$.at_time_of_refund' , '".$at_time_of_refund."', '$.company_type' , '".$company_type."', '$.marketing_executive_name' , '".$marketing_executive_name."', '$.status' , '".$status."' ) WHERE id='".$pr_file_data_id."'";
         $stmt = $obj->con1->prepare("UPDATE pr_files_data SET file_data = JSON_SET(file_data, '$.scheme_name', ?, '$.contact_person' , ?, '$.designation' , ?, '$.contact_no' , ?, '$.receivable_amount' , ?, '$.electricity_duty_exemption' , ?, '$.at_time_of_sanction' , ?, '$.at_time_of_visit' , ?, '$.at_time_of_refund' , ?, '$.company_type' , ?, '$.marketing_executive_name' , ?, '$.status' , ? ) WHERE id=?");
-        $stmt->bind_param("ssssssssssssi", $scheme_name, $contact_person, $designation, $contact_no, $receivable_amount, $electricity_duty_exemption, $at_time_of_sanction, $at_time_of_visit, $at_time_of_refund, $company_type, $marketing_executive_name, $status, $investments);
+        $stmt->bind_param("ssssssssssssi", $scheme_name, $contact_person, $designation, $contact_no, $receivable_amount, $electricity_duty_exemption, $at_time_of_sanction, $at_time_of_visit, $at_time_of_refund, $company_type, $marketing_executive_name, $status, $pr_file_data_id);
         $Resp = $stmt->execute();
 
         if (!$Resp) {

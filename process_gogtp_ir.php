@@ -1,5 +1,6 @@
 <?php
 include "header.php";
+error_reporting(E_ALL);
 
 $service_id = $_COOKIE['service_id'];
 
@@ -1489,7 +1490,7 @@ if (isset($_COOKIE["sql_error"])) {
   }
   function findTotal(against_loan, as_interest) {
     if (against_loan != "" && as_interest != "") {
-      against_loan = parseFloat(against_loan);edge
+      against_loan = parseFloat(against_loan); edge
       as_interest = parseFloat(as_interest);
       total = against_loan + as_interest;
       $('#total_amount').val(total);

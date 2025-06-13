@@ -1910,8 +1910,8 @@ if (isset($_REQUEST['action'])) {
 			<input type="text" class="form-control" name="designation" id="designation" value="' . ($edit ? $file_data->designation : "") . '" required />
 		</div>
 		<div class="col mb-6">
-			<label class="form-label" for="contact_number">Contact Number</label>
-			<input type="text" class="form-control" name="contact_number" id="contact_number" value="' . ($edit ? $file_data->contact_number : "") . '" required />
+			<label class="form-label" for="contact_no">Contact Number</label>
+			<input type="text" class="form-control" name="contact_no" id="contact_no" value="' . ($edit ? $file_data->contact_no : "") . '" required />
 		</div>
 	</div>
 
@@ -1921,19 +1921,8 @@ if (isset($_REQUEST['action'])) {
 			<input type="text" class="form-control" name="receivable_amount" id="receivable_amount" value="' . ($edit ? $file_data->receivable_amount : "") . '" required />
 		</div>
 		<div class="col mb-6">
-			<label class="form-label" for="electric_duty_exemption">Amount of Electric Duty Exemption</label>
-			<input type="text" class="form-control" name="electric_duty_exemption" id="electric_duty_exemption" value="' . ($edit ? $file_data->electric_duty_exemption : "") . '" required />
-		</div>
-	</div>
-
-	<div class="row mb-3">
-		<div class="col mb-6">
-			<label class="form-label" for="payment">Payment</label>
-			<input type="text" class="form-control" name="payment" id="payment" value="' . ($edit ? $file_data->payment : "") . '" required />
-		</div>
-		<div class="col mb-6">
-			<label class="form-label" for="advance_payment_amount">Advance Payment Amount</label>
-			<input type="text" class="form-control" name="advance_payment_amount" id="advance_payment_amount" value="' . ($edit ? $file_data->advance_payment_amount : "") . '" required />
+			<label class="form-label" for="electricity_duty_exemption">Amount of Electric Duty Exemption</label>
+			<input type="text" class="form-control" name="electricity_duty_exemption" id="electricity_duty_exemption" value="' . ($edit ? $file_data->electricity_duty_exemption : "") . '" required />
 		</div>
 	</div>
 
@@ -1950,16 +1939,9 @@ if (isset($_REQUEST['action'])) {
 
 	<div class="row mb-3">
 		<div class="col mb-6">
-			<label class="form-label" for="at_time_of_fund_released">At Time of Fund Released</label>
-			<input type="text" class="form-control" name="at_time_of_fund_released" id="at_time_of_fund_released" value="' . ($edit ? $file_data->at_time_of_fund_released : "") . '" required />
+			<label class="form-label" for="at_time_of_refund">At Time of Fund Released</label>
+			<input type="text" class="form-control" name="at_time_of_refund" id="at_time_of_refund" value="' . ($edit ? $file_data->at_time_of_refund : "") . '" required />
 		</div>
-		<div class="col mb-6">
-			<label class="form-label" for="company_type">Company Type</label>
-			<input type="text" class="form-control" name="company_type" id="company_type" value="' . ($edit ? $file_data->company_type : "") . '" required />
-		</div>
-	</div>
-
-	<div class="row mb-3">
 		<div class="col mb-6">
 			<label class="form-label" for="marketing_executive_name">Marketing Executive Name</label>
 			<input type="text" class="form-control" name="marketing_executive_name" id="marketing_executive_name" value="' . ($edit ? $file_data->marketing_executive_name : "") . '" required />
