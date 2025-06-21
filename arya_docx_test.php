@@ -24,7 +24,7 @@ function fill_file($inq_id, $service_id, $stage_id, $file_id, $doc_file, $doc_ty
     $stmt_files->execute();
     $result_files = $stmt_files->get_result();
     $stmt_files->close();
-    if (mysqli_num_rows($result_files)>0) {
+    if (mysqli_num_rows($result_files) > 0) {
         $res_files = $result_files->fetch_assoc();
         $file_data = json_decode($res_files["file_data"]);
         foreach ($file_data as $key => $value) {
@@ -76,7 +76,10 @@ function fill_file($inq_id, $service_id, $stage_id, $file_id, $doc_file, $doc_ty
 
 
     }
-
+    $variables = $templateProcessor->getVariables();
+    foreach ($variables as $var) {
+        $templateProcessor->setValue($var, '');
+    }
     $templateProcessor->saveAs($outputFileName);
     $full_path = $outputFileName;
     return $full_path;
@@ -163,7 +166,7 @@ function excel_fill($inq_id, $service_id, $stage_id, $file_id, $doc_file)
                             }
                         }
 
-                        return $matches[0]; 
+                        return $matches[0];
                     }, $value);
                 }
 
@@ -189,7 +192,7 @@ function excel_fill($inq_id, $service_id, $stage_id, $file_id, $doc_file)
                             }
                         }
 
-                        return $matches[0]; 
+                        return $matches[0];
                     }, $value);
                 }
 
@@ -213,7 +216,7 @@ function excel_fill($inq_id, $service_id, $stage_id, $file_id, $doc_file)
                             }
                         }
 
-                        return $matches[0]; 
+                        return $matches[0];
                     }, $value);
                 }
 
@@ -238,7 +241,7 @@ function excel_fill($inq_id, $service_id, $stage_id, $file_id, $doc_file)
                             }
                         }
 
-                        return $matches[0]; 
+                        return $matches[0];
                     }, $value);
                 }
 
