@@ -1764,8 +1764,8 @@ if (isset($_COOKIE["sql_error"])) {
               <div class="accordion mt-3" id="accordionCompany">
 
                 <?php
-                $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.stage_id=? and a1.service_id=?");
-                $stmt_list->bind_param("iii", $user_id, $stage['stage_id'], $stage['service_id']);
+                $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.service_id=?");
+                $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
                 $stmt_list->execute();
                 $result = $stmt_list->get_result();
                 $stmt_list->close();
