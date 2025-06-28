@@ -372,7 +372,7 @@ function check_for_badlead($value)
                   </li>
                 <?php }
               } ?>
-              <?php if ($user_department == "subsidy process" || $user_department == "loan process" || $user_department == "admin") { ?>
+              <?php if ($user_department == "subsidy process" || $user_department == "loan process" || $user_department == "admin" ) { ?>
 
                 <li class="menu-item <?php echo basename($_SERVER["PHP_SELF"]) == "" ? "active" : "" ?>">
                   <a href="employee_master.php" class="menu-link">
@@ -387,7 +387,7 @@ function check_for_badlead($value)
             </ul>
           </li>
 
-          <?php if ($user_department == "subsidy process" || $user_department == "loan process" || $user_department == "admin") { ?>
+          <?php if ($user_department == "subsidy process" || $user_department == "loan process" || $user_department == "admin" || $_SESSION["id"]==29) { ?>
 
             <li
               class="menu-item <?php echo in_array(basename($_SERVER["PHP_SELF"]), $processmenu) ? "active open" : "" ?> ">
@@ -397,7 +397,10 @@ function check_for_badlead($value)
               </a>
 
               <ul class="menu-sub">
-                <?php while ($scheme = mysqli_fetch_array($scheme_result)) {
+                <?php
+                if($_SESSION["id"]!=29 )
+                {
+                while ($scheme = mysqli_fetch_array($scheme_result)) {
                   $isActive = (basename($_SERVER["PHP_SELF"]) == "process_gogtp_ir.php" && $scheme['service'] == "GOGTP IR") || (basename($_SERVER["PHP_SELF"]) == "process_gogtp_pt.php" && $scheme['service'] == "GOGTP PT") || (basename($_SERVER["PHP_SELF"]) == "process.php" && !in_array($scheme['service'], ["GOGTP IR", "GOGTP PT"]) || (basename($_SERVER["PHP_SELF"]) == "process_preinward.php" && $scheme['service'] == "PRE-INWARD"));
                   ?>
                   <li class="menu-item <?php echo $isActive ? "active" : "" ?>">
@@ -407,6 +410,7 @@ function check_for_badlead($value)
                     </a>
                   </li>
                 <?php } 
+                }
                 
                 if($_SESSION["id"]==29 || $user_department == "admin")
                 {
