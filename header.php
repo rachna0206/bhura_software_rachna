@@ -45,7 +45,7 @@ $stmt_scheme->close();
 
 $adminmenu = array("company_plot_report.php", "assign_estate.php", "unassigned_estate_company.php", "assign_estate_plotting.php", "unassigned_estate_plotting.php", "add_industrial_estate.php", "add_industrial_estate_old.php", "company_entry.php", "estate_plotting_report.php", "estate_status_report.php", "visit_count_report.php", "scheme.php", "stages.php", "pr_file_format.php", "logged_users", "employee_master.php", "company_add_plot.php", "company_add_plot_est.php", "company_add_plot_com.php", "update_status.php", "logged_users.php", "estate_list.php", "change_ind_estate_name.php");
 
-$processmenu = array("process_gogtp_ir.php", "process_gogtp_pt.php", "process.php");
+$processmenu = array("process_gogtp_ir.php", "process_gogtp_pt.php", "process.php","process_preinward.php");
 /*function checkCompany_rawassign($value)
 {
   $stmt_comp = $GLOBALS['obj']->con1->prepare("SELECT COUNT(*) as cnt FROM `tbl_tdrawassign` WHERE inq_id=?");
@@ -406,7 +406,21 @@ function check_for_badlead($value)
                       <div data-i18n="course"><?php echo $scheme['service'] ?></div>
                     </a>
                   </li>
-                <?php } ?>
+                <?php } 
+                
+                if($_SESSION["id"]==29 || $user_department == "admin")
+                {
+                 
+                  ?>
+                  <li class="menu-item <?php echo (basename($_SERVER["PHP_SELF"])=="process_preinward.php")? "active" : "" ?>">
+                    <a href="javascript:process_pages('PRE-INWARD',0);"
+                      class="menu-link">
+                      <div data-i18n="course">PRE-INWARD</div>
+                    </a>
+                  </li>
+                  <?php
+                }
+                ?>
               </ul>
 
             </li>
