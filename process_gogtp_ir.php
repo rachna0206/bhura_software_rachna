@@ -1238,7 +1238,7 @@ if (isset($_COOKIE["sql_error"])) {
             aria-controls="accordion<?php echo $j ?>"><?php echo $stage['stage_name'] ?></button>
         </h2>
 
-        <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+        <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
           <div class="accordion-body">
 
 
@@ -1267,7 +1267,7 @@ if (isset($_COOKIE["sql_error"])) {
                         <?php echo $post_fields->Firm_Name ?></button>
                     </h2>
 
-                    <div id="compAccordion<?php echo $i ?>" class="accordion-collapse collapse show"
+                    <div id="compAccordion<?php echo $i ?>" class="accordion-collapse collapse"
                       data-bs-parent="#accordionCompany">
                       <div class="accordion-body">
 
@@ -1315,7 +1315,7 @@ if (isset($_COOKIE["sql_error"])) {
                                     <td>
                                       <?php if ($files_res['get_data_type'] == "retrieve" || $files_res['get_data_type'] == "calculate") { ?>
                                         <a
-                                          href="javascript:file_set_values('<?php echo $files_res['page_name'] ?>','<?php echo $data['tatassign_inq_id'] ?>','<?php echo $stage['service_id'] ?>','<?php echo $stage['stage_id'] ?>','<?php echo $files_res['fid'] ?>','<?php echo $count ?>','<?php echo $files_res['get_data_type'] ?>')">Fill
+                                          href="javascript:file_set_values('<?php echo $files_res['page_name'] ?>','<?php echo $data['tatassign_inq_id'] ?>','<?php echo $stage['service_id'] ?>','<?php echo $stage['stage_id'] ?>','<?php echo $files_res['fid'] ?>','<?php echo $count ?>','<?php echo $files_res['get_data_type'] ?>','<?php echo $post_fields->Firm_Name ?>')">Fill
                                           Data</a>
                                       <?php } ?>
                                     </td>
@@ -1374,7 +1374,7 @@ if (isset($_COOKIE["sql_error"])) {
   <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="modalCenterTitle">Fill Data</h5>
+        <h5 class="modal-title" id="modalCenterTitle"></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post">
@@ -1388,7 +1388,8 @@ if (isset($_COOKIE["sql_error"])) {
 
 <script type="text/javascript">
 
-  function file_set_values(page_name, inq_id, service_id, stage_id, file_id, count, get_data_type) {
+  function file_set_values(page_name, inq_id, service_id, stage_id, file_id, count, get_data_type, company_name) {
+    $('#modalCenterTitle').html('Fill Data for : ' + company_name);
     if (get_data_type == "retrieve") {
       $('#modalCenter').modal('toggle');
       $.ajax({
