@@ -161,6 +161,18 @@ if (isset($_COOKIE["msg"])) {
     </script>
   <?php
   }
+   if($_COOKIE['msg']=="update")
+  {
+
+  ?>
+  <div class="alert alert-primary alert-dismissible" role="alert">
+    Data updated succesfully
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+    </button>
+  </div>
+  <script type="text/javascript">eraseCookie("msg")</script>
+  <?php
+  }
   if ($_COOKIE['msg'] == "fail") {
   ?>
 

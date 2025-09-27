@@ -81,7 +81,7 @@ if(isset($_REQUEST['btn_update_plot']))
     {
       //insert into pr_company_details
           $stmt_pr_company_detail = $obj->con1->prepare("INSERT INTO `pr_company_details`(`source`, `source_name`, `contact_name`, `mobile_no`, `firm_name`, `gst_no`, `category`, `segment`, `premise`, `state`, `city`, `taluka`, `area`, `industrial_estate`, `inq_submit`, `industrial_estate_id`, `user_id`, `rawdata_id`, `status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-      $stmt_pr_company_detail->bind_param("sssssssssssssssiiis",$source,$source_name,$contact_person,$contact_no,$firm_name,$gst_no,$category,$segment,$premise,$state,$city,$taluka,$area,$industrial_estate,$inq_submit,$industrial_estate_id,$user_id,$company_result['id'],$status_company);
+      $stmt_pr_company_detail->bind_param("sssssssssssssssiiis",$source,$source_name,$contact_person,$contact_no,$firm_name,$gst_no,$category,$segment,$premise,$state,$city,$taluka,$area,$industrial_estate,$inq_submit,$industrial_estate_id,$user_id,$estate['id'],$status_company);
       $Resp=$stmt_pr_company_detail->execute();
       $last_insert_company_id = mysqli_insert_id($obj->con1);
       $stmt_pr_company_detail->close();
@@ -383,7 +383,7 @@ if(isset($_REQUEST['btn_update_plot']))
     
 
     setcookie("msg", "update",time()+3600,"/");
-    header("location:edit_plot.php");
+    header("location:company_plot_report.php");
   }
   else
   {
@@ -391,7 +391,6 @@ if(isset($_REQUEST['btn_update_plot']))
     header("location:edit_plot.php");
   }
 }
-
 
 
 
