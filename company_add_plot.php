@@ -17,7 +17,7 @@
         $city_comp = $_COOKIE['city_comp_addplot'];
         $taluka_comp = $_COOKIE['taluka_comp_addplot'];
         $area_comp = $_COOKIE['area_comp_addplot'];
-        echo $rawdataid_comp = $_COOKIE['rawdataid_comp_addplot'];
+        $rawdataid_comp = $_COOKIE['rawdataid_comp_addplot'];
         $status_company = $_COOKIE['company_status'];
         $emp_name = $_COOKIE['empname_comp_addplot'];
     }

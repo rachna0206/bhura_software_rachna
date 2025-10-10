@@ -77,7 +77,7 @@ if (isset($_REQUEST["flg"]) && $_REQUEST["flg"] == "del") {
 
 
 
-    $stmt_plot =  $obj->con1->prepare("SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($plot_data["taluka"]) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($plot_data["industrial_estate"]) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($plot_data["area_id"]) . "%' AND JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', '" . $plot_data["plot_no"] . "'))
+    $stmt_plot =  $obj->con1->prepare("SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($plot_data["taluka"]) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($plot_data["industrial_estate"]) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($plot_data["area_id"]) . "%' AND (JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', '".$plot_data["plot_no"]."')) OR JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', ".$plot_data["plot_no"].")))
   AND JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Road_No','" . $plot_data["road_no"] . "'))");
     $stmt_plot->execute();
     $plot_res = $stmt_plot->get_result();
