@@ -1,16 +1,12 @@
 <?php
 include("header.php");
-
 include("company_add_plot_excel.php");
 ?>
-
 <h4 class="fw-bold py-3 mb-4">Add Plotting in Company (No Industrial Estate)</h4>
-
 <?php
 if (isset($_REQUEST['download_single'])) {
   try {
    // $stmt = $obj->con1->prepare("SELECT r1.id, r1.raw_data->>'$.post_fields.Firm_Name' as firm_name, r1.raw_data->>'$.post_fields.Factory_Address' as factory_address, r1.raw_data->>'$.post_fields.Mobile_No' as mobile_no,r1.raw_data->>'$.post_fields.Contact_Name' as contact_name, (select stage END from tbl_tdrawassign where inq_id=r1.id order by id desc LIMIT 1) stage, (select CASE WHEN stage='lead' THEN 'Positive' WHEN stage='badlead' THEN 'Negative' ELSE 'Existing Client' END from tbl_tdrawassign where inq_id=r1.id order by id desc LIMIT 1) stage1 from tbl_tdrawdata r1 where r1.raw_data->'$.post_fields.city'='" . $_REQUEST["city"] . "' and r1.raw_data->'$.post_fields.Taluka'='" . $_REQUEST["taluka"] . "' and r1.raw_data->'$.post_fields.Area'='" . $_REQUEST["area"] . "' and JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 and raw_data->'$.post_fields.IndustrialEstate'='' and id not in (SELECT rawdata_id from pr_company_details)");
-
    $stmt=$obj->con1->prepare("SELECT 
     r1.id, 
     r1.raw_data->>'$.post_fields.Firm_Name' AS firm_name, 
@@ -89,8 +85,6 @@ WHERE
     AND JSON_CONTAINS_PATH(raw_data, 'one', '$.plot_details') = 0 
     AND raw_data->'$.post_fields.IndustrialEstate' = '' 
     AND r1.id NOT IN (SELECT rawdata_id FROM pr_company_details)");
-
-
     $stmt->execute();
     $res = $stmt->get_result();
     $stmt->close();

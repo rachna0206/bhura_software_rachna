@@ -5,10 +5,7 @@ include("func.php");
 $obj = new DB_connect();
 date_default_timezone_set("Asia/Kolkata");
 //error_reporting(E_ALL);
-
 session_start();
-
-
 if (!isset($_SESSION["userlogin"])) {
   header("location:index.php");
 }
@@ -23,6 +20,7 @@ while ($row = mysqli_fetch_array($admin_result)) {
 }
 
 $user_id = $_SESSION["id"];
+
 
 $stmt_username = $obj->con1->prepare("SELECT u1.id,u1.email,u1.role,u1.user_type,d1.department_name FROM `tbl_users` u1,tbl_department_master d1 where u1.department=d1.id and u1.id=?");
 $stmt_username->bind_param("i", $user_id);
@@ -511,7 +509,7 @@ function check_for_badlead($value)
                         <div class="flex-grow-1">
                           <span
                             class="fw-semibold d-block"><?php echo ucwords(strtolower($_SESSION["username"])) ?></span>
-                          <small class="text-muted"><?php echo ucwords(strtolower($username_result["role"])) ?></small>
+                          <small class="text-muted"><?php echo $username_result["role"]?ucwords(strtolower($username_result["role"])):"" ?></small>
                         </div>
                       </div>
                     </a>

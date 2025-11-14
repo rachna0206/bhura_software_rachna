@@ -75,10 +75,11 @@ if (isset($_REQUEST["flg"]) && $_REQUEST["flg"] == "del") {
     $plot_data = $stmt_estate->get_result()->fetch_assoc();
     $stmt_estate->close();
 
+    $floor = $plot_data["floor"] == "0" ? "Ground Floor" : $plot_data["floor"];
 
-
-    $stmt_plot =  $obj->con1->prepare("SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($plot_data["taluka"]) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($plot_data["industrial_estate"]) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($plot_data["area_id"]) . "%' AND (JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', '".$plot_data["plot_no"]."')) OR JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', ".$plot_data["plot_no"].")))
-  AND JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Road_No','" . $plot_data["road_no"] . "'))");
+  
+    $stmt_plot =  $obj->con1->prepare("SELECT * FROM tbl_tdrawdata WHERE lower(raw_data->'$.post_fields.Taluka') like '%" . strtolower($plot_data["taluka"]) . "%' and lower(raw_data->'$.post_fields.IndustrialEstate') like '%" . strtolower($plot_data["industrial_estate"]) . "%' and lower(raw_data->'$.post_fields.Area') like '%" . strtolower($plot_data["area_id"]) . "%' AND (JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', '" . $plot_data["plot_no"] . "')) OR JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Plot_No', " . $plot_data["plot_no"] . ")))
+  AND JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Road_No','" . $plot_data["road_no"] . "')) and JSON_CONTAINS(raw_data->'$.plot_details', JSON_OBJECT('Floor','".$floor."'));");
     $stmt_plot->execute();
     $plot_res = $stmt_plot->get_result();
     $stmt_plot->close();
@@ -92,19 +93,30 @@ if (isset($_REQUEST["flg"]) && $_REQUEST["flg"] == "del") {
 
     // Check if plot_details array exists in the JSON data
     if (isset($data['plot_details']) && is_array($data['plot_details'])) {
-      //echo "plot found";
-      // Loop through plot_details array and delete the object with matching Plot_Id
-      foreach ($data['plot_details'] as $key => $plot) {
-
-        if ($plot['Plot_No'] === $plot_data["plot_no"]) {
 
 
-          unset($data['plot_details'][$key]);
-        }
+      // Case 1: Only one plot object → delete entire plot_details
+      if (count($data['plot_details']) == 1) {
+       
+
+        unset($data['plot_details']);   // remove whole array
       }
+       else {
 
-      // Re-index the array to keep a continuous index
-      $data['plot_details'] = array_values($data['plot_details']);
+        // Case 2: Multiple plot objects → delete only matching floor
+        foreach ($data['plot_details'] as $key => $plot) {
+
+          // Match only the floor number
+          if ((string)$plot['Floor'] === (string)$floor) {
+          
+
+            unset($data['plot_details'][$key]);  // delete specific floor
+          }
+        }
+
+        // Re-index array after deletion
+        $data['plot_details'] = array_values($data['plot_details']);
+      }
     } else {
       // echo "No plot_details array found in the JSON data.\n";
     }
@@ -117,6 +129,7 @@ if (isset($_REQUEST["flg"]) && $_REQUEST["flg"] == "del") {
     $stmt_del = $obj->con1->prepare("delete from pr_company_plots where pid='" . $plot_id . "'");
     $Resp = $stmt_del->execute();
 
+   
     //update tbl_tdrawdata
     $stmt_update = $obj->con1->prepare("update tbl_tdrawdata set raw_data=?, userid=? where id=?");
     $stmt_update->bind_param("sii", $updatedJsonData, $estate["userid"], $estate["id"]);
@@ -161,16 +174,17 @@ if (isset($_COOKIE["msg"])) {
     </script>
   <?php
   }
-   if($_COOKIE['msg']=="update")
-  {
+  if ($_COOKIE['msg'] == "update") {
 
   ?>
-  <div class="alert alert-primary alert-dismissible" role="alert">
-    Data updated succesfully
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-    </button>
-  </div>
-  <script type="text/javascript">eraseCookie("msg")</script>
+    <div class="alert alert-primary alert-dismissible" role="alert">
+      Data updated succesfully
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+      </button>
+    </div>
+    <script type="text/javascript">
+      eraseCookie("msg")
+    </script>
   <?php
   }
   if ($_COOKIE['msg'] == "fail") {

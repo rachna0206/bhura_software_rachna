@@ -58,7 +58,7 @@ class Iterator implements \Iterator
      */
     public function next(): void
     {
-        ++$this->position;
+        ++$this->position;  
     }
 
     /**
@@ -66,8 +66,10 @@ class Iterator implements \Iterator
      *
      * @return bool
      */
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         return $this->position < $this->subject->getSheetCount() && $this->position >= 0;
+        
     }
 }
