@@ -1247,8 +1247,18 @@ if (isset($_COOKIE["sql_error"])) {
               <div class="accordion mt-3" id="accordionCompany">
 
                 <?php
-                $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.service_id=?");
-                $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
+                // $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.service_id=?");
+                // $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
+                $stmt_list = $obj->con1->prepare("SELECT a.*, s.stage_name, app.app_data,r.raw_data FROM tbl_tdtatassign a
+                            INNER JOIN (SELECT tatassign_inq_id, tatclaim_id, MAX(tatassign_id) AS last_assign_id FROM tbl_tdtatassign
+                            GROUP BY tatassign_inq_id, tatclaim_id) last_record ON a.tatassign_id = last_record.last_assign_id
+                            INNER JOIN tbl_tdstages s ON s.stage_id = a.stage_id
+                            INNER JOIN tbl_tdrawdata r ON r.id = a.tatassign_inq_id
+                            INNER JOIN (SELECT inq_id, MAX(id) AS latest_app_id FROM tbl_tdapplication
+                            GROUP BY inq_id) latest_app ON latest_app.inq_id = a.tatassign_inq_id
+                            INNER JOIN tbl_tdapplication app ON app.id = latest_app.latest_app_id
+                            WHERE s.stage_name LIKE '%" . $stage['stage_name'] . "%' AND a.tatassign_user_id = ? ORDER BY tatclaim_id;");
+                $stmt_list->bind_param("i", $user_id);
                 $stmt_list->execute();
                 $result = $stmt_list->get_result();
                 $stmt_list->close();
