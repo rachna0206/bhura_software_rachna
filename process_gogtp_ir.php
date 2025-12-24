@@ -1252,7 +1252,7 @@ if (isset($_COOKIE["sql_error"])) {
         <h2 class="accordion-header" id="headingOne">
           <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
             data-bs-target="#accordion<?php echo $j ?>" aria-expanded="false"
-            aria-controls="accordion<?php echo $j ?>"><?php echo $stage['stage_name'] ?></button>
+            aria-controls="accordion<?php echo $j ?>"><?php echo $stage['stage_name'] . ' - ' . $stage['tatassign_status'] ?></button>
         </h2>
 
         <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
