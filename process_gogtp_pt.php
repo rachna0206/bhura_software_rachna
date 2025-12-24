@@ -3,7 +3,24 @@ include "header.php";
 // error_reporting(E_ALL);
 $service_id = $_COOKIE['service_id'];
 
-$stmt_stage = $obj->con1->prepare("SELECT DISTINCT(s1.stage_name), a1.service_id, a1.stage_id from (select MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdstages s1 where tbl1.assign_id=a1.tatassign_id and a1.stage_id=s1.stage_id and a1.tatassign_user_id=? and a1.service_id=? and a1.stage_id in (select DISTINCT(stage_id) from pr_file_format where scheme_id=?)");
+$stmt_stage = $obj->con1->prepare("SELECT DISTINCT( s1.stage_name ),
+               a1.service_id,
+               a1.stage_id,
+               a1.tatassign_status
+FROM   (SELECT Max(t2.tatassign_id) AS assign_id
+        FROM   tbl_tdtatassign t1,
+               tbl_tdtatassign t2
+        WHERE  t1.tatassign_id = t2.tatassign_id
+        GROUP  BY t2.tatassign_inq_id) AS tbl1,
+       tbl_tdtatassign a1,
+       tbl_tdstages s1
+WHERE  tbl1.assign_id = a1.tatassign_id
+       AND a1.stage_id = s1.stage_id
+       AND a1.tatassign_user_id = ?
+       AND a1.service_id = ?
+       AND a1.stage_id IN (SELECT DISTINCT( stage_id )
+                           FROM   pr_file_format
+                           WHERE  scheme_id = ?);");
 $stmt_stage->bind_param("iii", $user_id, $service_id, $service_id);
 $stmt_stage->execute();
 $stage_result = $stmt_stage->get_result();
@@ -1740,7 +1757,7 @@ if (isset($_COOKIE["sql_error"])) {
 ?>
 
 <!-- accordian start -->
- 
+
 <div class="col-md mb-4 mb-md-0">
   <!-- <small class="text-light fw-semibold">Basic Accordion</small> -->
   <div class="accordion mt-3" id="accordionExample">
@@ -1752,7 +1769,7 @@ if (isset($_COOKIE["sql_error"])) {
         <h2 class="accordion-header" id="headingOne">
           <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
             data-bs-target="#accordion<?php echo $j ?>" aria-expanded="false"
-            aria-controls="accordion<?php echo $j ?>"><?php echo $stage['stage_name'] ?></button>
+            aria-controls="accordion<?php echo $j ?>"><?php echo $stage['stage_name'] . ' - ' . $stage['tatassign_status'] ?></button>
         </h2>
 
         <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
@@ -1764,8 +1781,47 @@ if (isset($_COOKIE["sql_error"])) {
               <div class="accordion mt-3" id="accordionCompany">
 
                 <?php
-                $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.service_id=?");
-                $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
+                // $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.service_id=?");
+                // $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
+                $stmt_list = $obj->con1->prepare("SELECT
+    ta.stage_id,
+    ta.tatassign_inq_id,
+    ta.tatassign_user_id,
+    tdusers.name AS current_user_name,
+    c.tatassign_id AS td_claimid,
+    tapp.id AS application_id,
+    r1.raw_data
+FROM
+    tbl_tdtatassign ta
+    INNER JOIN tbl_tdtatclaim c
+            ON ta.tatclaim_id = c.tatassign_id
+    INNER JOIN (SELECT tatassign_inq_id,
+                       tatassign_status,
+                       tatassign_user_id,
+                       tatclaim_id
+                FROM   tbl_tdtatassign
+                WHERE  tatassign_id IN (SELECT Max(tatassign_id)
+                                        FROM   tbl_tdtatassign
+                                        GROUP  BY tatclaim_id)) sq
+            ON sq.tatclaim_id = c.tatassign_id
+               AND sq.tatassign_user_id = ?
+    INNER JOIN tbl_tdapplication tapp
+            ON tapp.inq_id = c.tatassign_inq_id
+               AND tapp.id IN (SELECT Max(id)
+                               FROM   tbl_tdapplication
+                               GROUP  BY inq_id)
+    INNER JOIN tbl_users tdusers
+            ON tdusers.id = sq.tatassign_user_id
+    INNER JOIN tbl_service_master sm
+            ON sm.id = c.service_id
+    LEFT JOIN tbl_tdrawdata r1
+           ON r1.id = sq.tatassign_inq_id
+WHERE
+    c.service_id = ?
+    AND sq.tatassign_status = ?
+GROUP BY
+    sq.tatassign_inq_id;");
+                $stmt_list->bind_param("iis", $user_id, $stage['service_id'], $stage['tatassign_status']);
                 $stmt_list->execute();
                 $result = $stmt_list->get_result();
                 $stmt_list->close();
