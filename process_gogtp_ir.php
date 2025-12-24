@@ -3,7 +3,7 @@ include "header.php";
 error_reporting(E_ALL);
 
 $service_id = $_COOKIE['service_id'];
-echo $user_id, $service_id, $service_id;
+// echo $user_id, $service_id, $service_id;
 $stmt_stage = $obj->con1->prepare("SELECT DISTINCT( s1.stage_name ),
                a1.service_id,
                a1.stage_id,
