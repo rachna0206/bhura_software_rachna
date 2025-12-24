@@ -3,8 +3,25 @@ include "header.php";
 error_reporting(E_ALL);
 
 $service_id = $_COOKIE['service_id'];
-
-$stmt_stage = $obj->con1->prepare("SELECT DISTINCT(s1.stage_name), a1.service_id, a1.stage_id from (select MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdstages s1 where tbl1.assign_id=a1.tatassign_id and a1.stage_id=s1.stage_id and a1.tatassign_user_id=? and a1.service_id=? and a1.stage_id in (select DISTINCT(stage_id) from pr_file_format where scheme_id=?)");
+echo $user_id, $service_id, $service_id;
+$stmt_stage = $obj->con1->prepare("SELECT DISTINCT( s1.stage_name ),
+               a1.service_id,
+               a1.stage_id,
+               a1.tatassign_status
+FROM   (SELECT Max(t2.tatassign_id) AS assign_id
+        FROM   tbl_tdtatassign t1,
+               tbl_tdtatassign t2
+        WHERE  t1.tatassign_id = t2.tatassign_id
+        GROUP  BY t2.tatassign_inq_id) AS tbl1,
+       tbl_tdtatassign a1,
+       tbl_tdstages s1
+WHERE  tbl1.assign_id = a1.tatassign_id
+       AND a1.stage_id = s1.stage_id
+       AND a1.tatassign_user_id = ?
+       AND a1.service_id = ?
+       AND a1.stage_id IN (SELECT DISTINCT( stage_id )
+                           FROM   pr_file_format
+                           WHERE  scheme_id = ?);");
 $stmt_stage->bind_param("iii", $user_id, $service_id, $service_id);
 $stmt_stage->execute();
 $stage_result = $stmt_stage->get_result();
@@ -1294,10 +1311,10 @@ FROM
            ON r1.id = sq.tatassign_inq_id
 WHERE
     c.service_id = ?
-    AND sq.tatassign_status = 'Process - GOGTP IR'
+    AND sq.tatassign_status = ?
 GROUP BY
     sq.tatassign_inq_id;");
-                $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
+                $stmt_list->bind_param("iis", $user_id, $stage['service_id'], $stage['tatassign_status']);
                 $stmt_list->execute();
                 $result = $stmt_list->get_result();
                 $stmt_list->close();
