@@ -2,8 +2,10 @@
 include "header.php";
 // error_reporting(E_ALL);
 $service_id = $_COOKIE['service_id'];
-
-$stmt_stage = $obj->con1->prepare("SELECT DISTINCT( s1.stage_name ),
+// echo $user_id, $service_id, $service_id;
+$qr = "";
+if ($user_id == 1) {
+  $qr = "SELECT DISTINCT( s1.stage_name ),
                a1.service_id,
                a1.stage_id,
                a1.tatassign_status
@@ -16,12 +18,33 @@ FROM   (SELECT Max(t2.tatassign_id) AS assign_id
        tbl_tdstages s1
 WHERE  tbl1.assign_id = a1.tatassign_id
        AND a1.stage_id = s1.stage_id
-       AND a1.tatassign_user_id = ?
        AND a1.service_id = ?
        AND a1.stage_id IN (SELECT DISTINCT( stage_id )
                            FROM   pr_file_format
-                           WHERE  scheme_id = ?);");
-$stmt_stage->bind_param("iii", $user_id, $service_id, $service_id);
+                           WHERE  scheme_id = ?);";
+
+} else {
+  $qr = "SELECT DISTINCT( s1.stage_name ),
+               a1.service_id,
+               a1.stage_id,
+               a1.tatassign_status
+FROM   (SELECT Max(t2.tatassign_id) AS assign_id
+        FROM   tbl_tdtatassign t1,
+               tbl_tdtatassign t2
+        WHERE  t1.tatassign_id = t2.tatassign_id
+        GROUP  BY t2.tatassign_inq_id) AS tbl1,
+       tbl_tdtatassign a1,
+       tbl_tdstages s1
+WHERE  tbl1.assign_id = a1.tatassign_id
+       AND a1.stage_id = s1.stage_id
+       AND a1.tatassign_user_id = " . $user_id . "
+       AND a1.service_id = ?
+       AND a1.stage_id IN (SELECT DISTINCT( stage_id )
+                           FROM   pr_file_format
+                           WHERE  scheme_id = ?);";
+}
+$stmt_stage = $obj->con1->prepare($qr);
+$stmt_stage->bind_param("ii", $service_id, $service_id);
 $stmt_stage->execute();
 $stage_result = $stmt_stage->get_result();
 $stmt_stage->close();
@@ -1755,8 +1778,11 @@ if (isset($_COOKIE["sql_error"])) {
   <?php
 }
 ?>
-
-<!-- accordian start -->
+<div class="text-center">
+  <span class="badge bg-label-primary">
+    Total Stages - <?php echo $total_count ?>
+  </span>
+</div>
 
 <div class="col-md mb-4 mb-md-0">
   <!-- <small class="text-light fw-semibold">Basic Accordion</small> -->
@@ -1764,26 +1790,10 @@ if (isset($_COOKIE["sql_error"])) {
     <?php
     $j = 0;
     while ($stage = mysqli_fetch_array($stage_result)) {
-      ?>
-      <div class="card accordion-item">
-        <h2 class="accordion-header" id="headingOne">
-          <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
-            data-bs-target="#accordion<?php echo $j ?>" aria-expanded="false"
-            aria-controls="accordion<?php echo $j ?>"><?php echo $stage['stage_name'] . ' - ' . $stage['tatassign_status'] ?></button>
-        </h2>
-
-        <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-          <div class="accordion-body">
-
-
-            <!-- nested accordion -->
-            <div class="col-md mb-4 mb-md-0">
-              <div class="accordion mt-3" id="accordionCompany">
-
-                <?php
-                // $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.service_id=?");
-                // $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
-                $stmt_list = $obj->con1->prepare("SELECT
+      // $stmt_list = $obj->con1->prepare("SELECT a1.stage_id, a1.tatassign_inq_id, a1.tatassign_user_id, r1.raw_data from (SELECT MAX(t2.tatassign_id) as assign_id from tbl_tdtatassign t1, tbl_tdtatassign t2 where t1.tatassign_id=t2.tatassign_id GROUP BY t2.tatassign_inq_id) as tbl1, tbl_tdtatassign a1, tbl_tdrawdata r1 where tbl1.assign_id=a1.tatassign_id and a1.tatassign_inq_id=r1.id and a1.tatassign_user_id=? and a1.service_id=?");
+      // $stmt_list->bind_param("ii", $user_id, $stage['service_id']);
+      if ($user_id == 1) {
+        $qr = "SELECT
     ta.stage_id,
     ta.tatassign_inq_id,
     ta.tatassign_user_id,
@@ -1804,7 +1814,6 @@ FROM
                                         FROM   tbl_tdtatassign
                                         GROUP  BY tatclaim_id)) sq
             ON sq.tatclaim_id = c.tatassign_id
-               AND sq.tatassign_user_id = ?
     INNER JOIN tbl_tdapplication tapp
             ON tapp.inq_id = c.tatassign_inq_id
                AND tapp.id IN (SELECT Max(id)
@@ -1820,12 +1829,82 @@ WHERE
     c.service_id = ?
     AND sq.tatassign_status = ?
 GROUP BY
-    sq.tatassign_inq_id;");
-                $stmt_list->bind_param("iis", $user_id, $stage['service_id'], $stage['tatassign_status']);
-                $stmt_list->execute();
-                $result = $stmt_list->get_result();
-                $stmt_list->close();
-                $i = 1;
+    sq.tatassign_inq_id;";
+      } else {
+        $qr = "SELECT
+    ta.stage_id,
+    ta.tatassign_inq_id,
+    ta.tatassign_user_id,
+    tdusers.name AS current_user_name,
+    c.tatassign_id AS td_claimid,
+    tapp.id AS application_id,
+    r1.raw_data
+FROM
+    tbl_tdtatassign ta
+    INNER JOIN tbl_tdtatclaim c
+            ON ta.tatclaim_id = c.tatassign_id
+    INNER JOIN (SELECT tatassign_inq_id,
+                       tatassign_status,
+                       tatassign_user_id,
+                       tatclaim_id
+                FROM   tbl_tdtatassign
+                WHERE  tatassign_id IN (SELECT Max(tatassign_id)
+                                        FROM   tbl_tdtatassign
+                                        GROUP  BY tatclaim_id)) sq
+            ON sq.tatclaim_id = c.tatassign_id
+               AND sq.tatassign_user_id = " . $user_id . "
+    INNER JOIN tbl_tdapplication tapp
+            ON tapp.inq_id = c.tatassign_inq_id
+               AND tapp.id IN (SELECT Max(id)
+                               FROM   tbl_tdapplication
+                               GROUP  BY inq_id)
+    INNER JOIN tbl_users tdusers
+            ON tdusers.id = sq.tatassign_user_id
+    INNER JOIN tbl_service_master sm
+            ON sm.id = c.service_id
+    LEFT JOIN tbl_tdrawdata r1
+           ON r1.id = sq.tatassign_inq_id
+WHERE
+    c.service_id = ?
+    AND sq.tatassign_status = ?
+GROUP BY
+    sq.tatassign_inq_id;";
+      }
+      $stmt_list = $obj->con1->prepare($qr);
+      $stmt_list->bind_param("is", $stage['service_id'], $stage['tatassign_status']);
+      $stmt_list->execute();
+      $result = $stmt_list->get_result();
+      $stmt_list->close();
+      $i = 1;
+      $total_count = mysqli_num_rows($result);
+      ?>
+      <div class="card accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
+            data-bs-target="#accordion<?php echo $j ?>" aria-expanded="false" aria-controls="accordion
+            <?php echo $j ?>">
+
+            <div class="d-flex w-100 justify-content-between align-items-center">
+              <span>
+                <?php echo $stage['stage_name'] . ' - ' . $stage['tatassign_status'] ?>
+              </span>
+              <span class="badge bg-secondary me-3">
+                <?php echo $total_count ?>
+              </span>
+            </div>
+
+          </button>
+        </h2>
+
+        <div id="accordion<?php echo $j ?>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+          <div class="accordion-body">
+
+
+            <!-- nested accordion -->
+            <div class="col-md mb-4 mb-md-0">
+              <div class="accordion mt-3" id="accordionCompany">
+
+                <?php
 
                 while ($data = mysqli_fetch_array($result)) {
                   $row_data = json_decode($data["raw_data"]);
@@ -1836,7 +1915,7 @@ GROUP BY
                     <h2 class="accordion-header" id="headingOne">
                       <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
                         data-bs-target="#compAccordion<?php echo $i ?>" aria-expanded="false"
-                        aria-controls="compAccordion<?php echo $i ?>">Company Name :
+                        aria-controls="compAccordion<?php echo $i ?>"><?php echo $i ?> - Company Name :
                         <?php echo $post_fields->Firm_Name ?></button>
                     </h2>
 
